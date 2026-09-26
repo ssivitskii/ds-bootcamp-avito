@@ -9,10 +9,10 @@ dist/
 .pytest_cache/
 .DS_Store
 
-# Generated locally. The input manifest remains reviewable in the repository.
+# Generated diagnostics and temporary outputs.
 artifacts/audit.json
-artifacts/evaluation.json
 artifacts/validation.json
+artifacts/independent_checks.json
+artifacts/reproduction.json
 artifacts/*.log
 artifacts/answer.reproduced.csv
-answer.csv
