@@ -1,0 +1,36 @@
+{
+  "seed": 20260927,
+  "top_k": 50,
+  "candidate_pool_per_channel": 120,
+  "batch_size": 32,
+  "max_tune_queries": 600,
+  "max_confirm_queries": 600,
+  "fold_modulo": 5,
+  "tune_fold": 0,
+  "confirm_fold": 1,
+  "word_max_features": 140000,
+  "word_min_df": 2,
+  "char_max_features": 120000,
+  "char_min_df": 2,
+  "description_chars": 900,
+  "item_params_chars": 1200,
+  "history_neighbors": 12,
+  "history_items_per_query": 30,
+  "fallback_items": 120,
+  "weights": {
+    "word": 1.0,
+    "char": 0.75,
+    "filter": 0.18,
+    "history": 0.55,
+    "category": 0.12,
+    "location": 0.06,
+    "popularity": 0.03
+  },
+  "tuning_grid": {
+    "char": [0.55, 0.8, 1.05],
+    "filter": [0.0, 0.18],
+    "history": [0.0, 0.25, 0.6, 0.95],
+    "category": [0.05, 0.14],
+    "location": [0.02, 0.1, 0.3, 0.7]
+  }
+}

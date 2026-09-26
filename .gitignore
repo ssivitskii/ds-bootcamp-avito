@@ -1,0 +1,18 @@
+.venv/
+data/
+cache/
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.DS_Store
+
+# Generated locally. The input manifest remains reviewable in the repository.
+artifacts/audit.json
+artifacts/evaluation.json
+artifacts/validation.json
+artifacts/*.log
+artifacts/answer.reproduced.csv
+answer.csv

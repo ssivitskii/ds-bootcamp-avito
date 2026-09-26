@@ -1,0 +1,2441 @@
+{
+  "config": {
+    "batch_size": 32,
+    "candidate_pool_per_channel": 120,
+    "char_max_features": 120000,
+    "char_min_df": 2,
+    "confirm_fold": 1,
+    "description_chars": 900,
+    "fallback_items": 120,
+    "fold_modulo": 5,
+    "history_items_per_query": 30,
+    "history_neighbors": 12,
+    "item_params_chars": 1200,
+    "max_confirm_queries": 600,
+    "max_tune_queries": 600,
+    "seed": 20260927,
+    "top_k": 50,
+    "tune_fold": 0,
+    "tuning_grid": {
+      "category": [
+        0.05,
+        0.14
+      ],
+      "char": [
+        0.55,
+        0.8,
+        1.05
+      ],
+      "filter": [
+        0.0,
+        0.18
+      ],
+      "history": [
+        0.0,
+        0.25,
+        0.6,
+        0.95
+      ],
+      "location": [
+        0.02,
+        0.1,
+        0.3,
+        0.7
+      ]
+    },
+    "weights": {
+      "category": 0.12,
+      "char": 0.75,
+      "filter": 0.18,
+      "history": 0.55,
+      "location": 0.06,
+      "popularity": 0.03,
+      "word": 1.0
+    },
+    "word_max_features": 140000,
+    "word_min_df": 2
+  },
+  "confirm": {
+    "ablations": {
+      "hybrid_full": 0.7191880341880342,
+      "hybrid_without_history": 0.7183547008547009,
+      "hybrid_without_metadata": 0.2912179487179487,
+      "lexical_with_filter": 0.28816239316239317,
+      "lexical_word": 0.17166666666666666,
+      "lexical_word_char": 0.28816239316239317
+    },
+    "error_slices": {
+      "category_global": {
+        "queries": 0,
+        "recall_at_50": 0.0
+      },
+      "category_scoped": {
+        "queries": 600,
+        "recall_at_50": 0.7191880341880342
+      },
+      "filter_empty": {
+        "queries": 207,
+        "recall_at_50": 0.7246376811594203
+      },
+      "filter_present": {
+        "queries": 393,
+        "recall_at_50": 0.7163176094473805
+      },
+      "location_common": {
+        "queries": 594,
+        "recall_at_50": 0.721402054735388
+      },
+      "location_rare": {
+        "queries": 6,
+        "recall_at_50": 0.5
+      },
+      "query_multi_token": {
+        "queries": 531,
+        "recall_at_50": 0.7190834902699309
+      },
+      "query_one_token": {
+        "queries": 69,
+        "recall_at_50": 0.7199925678186548
+      },
+      "relevant_all_history_seen": {
+        "queries": 177,
+        "recall_at_50": 0.711864406779661
+      },
+      "relevant_has_unseen": {
+        "queries": 423,
+        "recall_at_50": 0.7222525307631692
+      }
+    },
+    "fit_and_retrieval_seconds": 102.73722220794298,
+    "queries": 600
+  },
+  "protocol": {
+    "confirm_fold": 1,
+    "evaluation_catalog": "benchmark items union all deduplicated train items",
+    "history_excludes_entire_heldout_text_group": true,
+    "metric": "macro Recall@50 over aggregated full search tuples",
+    "split": "sha256(normalized search_query) modulo fold_modulo",
+    "tune_fold": 0,
+    "tune_history_also_excludes_confirm_fold": true
+  },
+  "selected_weights": {
+    "category": 0.05,
+    "char": 0.55,
+    "filter": 0.0,
+    "history": 0.25,
+    "location": 0.7,
+    "popularity": 0.03,
+    "word": 1.0
+  },
+  "tune": {
+    "best_recall_at_50": 0.7619625800612643,
+    "fit_and_retrieval_seconds": 516.1762292080093,
+    "queries": 600,
+    "trials": [
+      {
+        "recall_at_50": 0.7619625800612643,
+        "weights": {
+          "category": 0.05,
+          "char": 0.55,
+          "filter": 0.0,
+          "history": 0.25,
+          "location": 0.7,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.7619625800612643,
+        "weights": {
+          "category": 0.05,
+          "char": 0.55,
+          "filter": 0.18,
+          "history": 0.25,
+          "location": 0.7,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.7619625800612643,
+        "weights": {
+          "category": 0.14,
+          "char": 0.55,
+          "filter": 0.0,
+          "history": 0.25,
+          "location": 0.7,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.7619625800612643,
+        "weights": {
+          "category": 0.14,
+          "char": 0.55,
+          "filter": 0.18,
+          "history": 0.25,
+          "location": 0.7,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.7599625800612643,
+        "weights": {
+          "category": 0.05,
+          "char": 0.55,
+          "filter": 0.0,
+          "history": 0.0,
+          "location": 0.7,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.7599625800612643,
+        "weights": {
+          "category": 0.05,
+          "char": 0.55,
+          "filter": 0.18,
+          "history": 0.0,
+          "location": 0.7,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.7599625800612643,
+        "weights": {
+          "category": 0.14,
+          "char": 0.55,
+          "filter": 0.0,
+          "history": 0.0,
+          "location": 0.7,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.7599625800612643,
+        "weights": {
+          "category": 0.14,
+          "char": 0.55,
+          "filter": 0.18,
+          "history": 0.0,
+          "location": 0.7,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.7588375800612643,
+        "weights": {
+          "category": 0.05,
+          "char": 0.55,
+          "filter": 0.0,
+          "history": 0.6,
+          "location": 0.7,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.7588375800612643,
+        "weights": {
+          "category": 0.14,
+          "char": 0.55,
+          "filter": 0.0,
+          "history": 0.6,
+          "location": 0.7,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.7587498607630186,
+        "weights": {
+          "category": 0.05,
+          "char": 0.55,
+          "filter": 0.18,
+          "history": 0.6,
+          "location": 0.7,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.7587498607630186,
+        "weights": {
+          "category": 0.14,
+          "char": 0.55,
+          "filter": 0.18,
+          "history": 0.6,
+          "location": 0.7,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.7473092706513759,
+        "weights": {
+          "category": 0.05,
+          "char": 0.55,
+          "filter": 0.0,
+          "history": 0.95,
+          "location": 0.7,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.7473092706513759,
+        "weights": {
+          "category": 0.05,
+          "char": 0.55,
+          "filter": 0.18,
+          "history": 0.95,
+          "location": 0.7,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.7473092706513759,
+        "weights": {
+          "category": 0.14,
+          "char": 0.55,
+          "filter": 0.0,
+          "history": 0.95,
+          "location": 0.7,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.7473092706513759,
+        "weights": {
+          "category": 0.14,
+          "char": 0.55,
+          "filter": 0.18,
+          "history": 0.95,
+          "location": 0.7,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.7099747981063771,
+        "weights": {
+          "category": 0.05,
+          "char": 0.8,
+          "filter": 0.18,
+          "history": 0.25,
+          "location": 0.7,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.7099747981063771,
+        "weights": {
+          "category": 0.14,
+          "char": 0.8,
+          "filter": 0.18,
+          "history": 0.25,
+          "location": 0.7,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.7096414647730437,
+        "weights": {
+          "category": 0.05,
+          "char": 0.8,
+          "filter": 0.18,
+          "history": 0.0,
+          "location": 0.7,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.7096414647730437,
+        "weights": {
+          "category": 0.14,
+          "char": 0.8,
+          "filter": 0.18,
+          "history": 0.0,
+          "location": 0.7,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.709349798106377,
+        "weights": {
+          "category": 0.05,
+          "char": 0.8,
+          "filter": 0.18,
+          "history": 0.6,
+          "location": 0.7,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.709349798106377,
+        "weights": {
+          "category": 0.14,
+          "char": 0.8,
+          "filter": 0.18,
+          "history": 0.6,
+          "location": 0.7,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.7083081314397104,
+        "weights": {
+          "category": 0.05,
+          "char": 0.8,
+          "filter": 0.0,
+          "history": 0.25,
+          "location": 0.7,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.7083081314397104,
+        "weights": {
+          "category": 0.14,
+          "char": 0.8,
+          "filter": 0.0,
+          "history": 0.25,
+          "location": 0.7,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.707974798106377,
+        "weights": {
+          "category": 0.05,
+          "char": 0.8,
+          "filter": 0.0,
+          "history": 0.0,
+          "location": 0.7,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.707974798106377,
+        "weights": {
+          "category": 0.14,
+          "char": 0.8,
+          "filter": 0.0,
+          "history": 0.0,
+          "location": 0.7,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.7076831314397104,
+        "weights": {
+          "category": 0.05,
+          "char": 0.8,
+          "filter": 0.0,
+          "history": 0.6,
+          "location": 0.7,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.7076831314397104,
+        "weights": {
+          "category": 0.14,
+          "char": 0.8,
+          "filter": 0.0,
+          "history": 0.6,
+          "location": 0.7,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.6991646129211918,
+        "weights": {
+          "category": 0.05,
+          "char": 0.8,
+          "filter": 0.18,
+          "history": 0.95,
+          "location": 0.7,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.6991646129211918,
+        "weights": {
+          "category": 0.14,
+          "char": 0.8,
+          "filter": 0.18,
+          "history": 0.95,
+          "location": 0.7,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.6974979462545251,
+        "weights": {
+          "category": 0.05,
+          "char": 0.8,
+          "filter": 0.0,
+          "history": 0.95,
+          "location": 0.7,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.6974979462545251,
+        "weights": {
+          "category": 0.14,
+          "char": 0.8,
+          "filter": 0.0,
+          "history": 0.95,
+          "location": 0.7,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.6663405388471177,
+        "weights": {
+          "category": 0.05,
+          "char": 1.05,
+          "filter": 0.0,
+          "history": 0.95,
+          "location": 0.7,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.6663405388471177,
+        "weights": {
+          "category": 0.14,
+          "char": 1.05,
+          "filter": 0.0,
+          "history": 0.95,
+          "location": 0.7,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.6661553536619326,
+        "weights": {
+          "category": 0.05,
+          "char": 1.05,
+          "filter": 0.18,
+          "history": 0.95,
+          "location": 0.7,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.6661553536619326,
+        "weights": {
+          "category": 0.14,
+          "char": 1.05,
+          "filter": 0.18,
+          "history": 0.95,
+          "location": 0.7,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.6659840573656362,
+        "weights": {
+          "category": 0.05,
+          "char": 1.05,
+          "filter": 0.0,
+          "history": 0.0,
+          "location": 0.7,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.6659840573656362,
+        "weights": {
+          "category": 0.14,
+          "char": 1.05,
+          "filter": 0.0,
+          "history": 0.0,
+          "location": 0.7,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.6657988721804511,
+        "weights": {
+          "category": 0.05,
+          "char": 1.05,
+          "filter": 0.18,
+          "history": 0.0,
+          "location": 0.7,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.6657988721804511,
+        "weights": {
+          "category": 0.14,
+          "char": 1.05,
+          "filter": 0.18,
+          "history": 0.0,
+          "location": 0.7,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.664650724032303,
+        "weights": {
+          "category": 0.05,
+          "char": 1.05,
+          "filter": 0.0,
+          "history": 0.6,
+          "location": 0.7,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.664650724032303,
+        "weights": {
+          "category": 0.14,
+          "char": 1.05,
+          "filter": 0.0,
+          "history": 0.6,
+          "location": 0.7,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.6644655388471178,
+        "weights": {
+          "category": 0.05,
+          "char": 1.05,
+          "filter": 0.18,
+          "history": 0.6,
+          "location": 0.7,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.6644655388471178,
+        "weights": {
+          "category": 0.14,
+          "char": 1.05,
+          "filter": 0.18,
+          "history": 0.6,
+          "location": 0.7,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.6643173906989696,
+        "weights": {
+          "category": 0.05,
+          "char": 1.05,
+          "filter": 0.0,
+          "history": 0.25,
+          "location": 0.7,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.6643173906989696,
+        "weights": {
+          "category": 0.14,
+          "char": 1.05,
+          "filter": 0.0,
+          "history": 0.25,
+          "location": 0.7,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.6641322055137844,
+        "weights": {
+          "category": 0.05,
+          "char": 1.05,
+          "filter": 0.18,
+          "history": 0.25,
+          "location": 0.7,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.6641322055137844,
+        "weights": {
+          "category": 0.14,
+          "char": 1.05,
+          "filter": 0.18,
+          "history": 0.25,
+          "location": 0.7,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.6051163324979114,
+        "weights": {
+          "category": 0.05,
+          "char": 0.55,
+          "filter": 0.0,
+          "history": 0.0,
+          "location": 0.3,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.6051163324979114,
+        "weights": {
+          "category": 0.14,
+          "char": 0.55,
+          "filter": 0.0,
+          "history": 0.0,
+          "location": 0.3,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.6033107769423558,
+        "weights": {
+          "category": 0.05,
+          "char": 0.55,
+          "filter": 0.18,
+          "history": 0.0,
+          "location": 0.3,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.6033107769423558,
+        "weights": {
+          "category": 0.14,
+          "char": 0.55,
+          "filter": 0.18,
+          "history": 0.0,
+          "location": 0.3,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.6024774436090226,
+        "weights": {
+          "category": 0.05,
+          "char": 0.55,
+          "filter": 0.18,
+          "history": 0.25,
+          "location": 0.3,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.6024774436090226,
+        "weights": {
+          "category": 0.14,
+          "char": 0.55,
+          "filter": 0.18,
+          "history": 0.25,
+          "location": 0.3,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.6021996658312448,
+        "weights": {
+          "category": 0.05,
+          "char": 0.55,
+          "filter": 0.0,
+          "history": 0.25,
+          "location": 0.3,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.6021996658312448,
+        "weights": {
+          "category": 0.14,
+          "char": 0.55,
+          "filter": 0.0,
+          "history": 0.25,
+          "location": 0.3,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.5915144806460595,
+        "weights": {
+          "category": 0.05,
+          "char": 0.55,
+          "filter": 0.18,
+          "history": 0.6,
+          "location": 0.3,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.5915144806460595,
+        "weights": {
+          "category": 0.14,
+          "char": 0.55,
+          "filter": 0.18,
+          "history": 0.6,
+          "location": 0.3,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.5912367028682818,
+        "weights": {
+          "category": 0.05,
+          "char": 0.55,
+          "filter": 0.0,
+          "history": 0.6,
+          "location": 0.3,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.5912367028682818,
+        "weights": {
+          "category": 0.14,
+          "char": 0.55,
+          "filter": 0.0,
+          "history": 0.6,
+          "location": 0.3,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.5562269119769119,
+        "weights": {
+          "category": 0.05,
+          "char": 0.55,
+          "filter": 0.18,
+          "history": 0.95,
+          "location": 0.3,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.5562269119769119,
+        "weights": {
+          "category": 0.14,
+          "char": 0.55,
+          "filter": 0.18,
+          "history": 0.95,
+          "location": 0.3,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.5559491341991342,
+        "weights": {
+          "category": 0.05,
+          "char": 0.55,
+          "filter": 0.0,
+          "history": 0.95,
+          "location": 0.3,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.5559491341991342,
+        "weights": {
+          "category": 0.14,
+          "char": 0.55,
+          "filter": 0.0,
+          "history": 0.95,
+          "location": 0.3,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.537650724032303,
+        "weights": {
+          "category": 0.05,
+          "char": 0.8,
+          "filter": 0.0,
+          "history": 0.0,
+          "location": 0.3,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.537650724032303,
+        "weights": {
+          "category": 0.05,
+          "char": 0.8,
+          "filter": 0.18,
+          "history": 0.0,
+          "location": 0.3,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.537650724032303,
+        "weights": {
+          "category": 0.14,
+          "char": 0.8,
+          "filter": 0.0,
+          "history": 0.0,
+          "location": 0.3,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.537650724032303,
+        "weights": {
+          "category": 0.14,
+          "char": 0.8,
+          "filter": 0.18,
+          "history": 0.0,
+          "location": 0.3,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.5354285018100807,
+        "weights": {
+          "category": 0.05,
+          "char": 0.8,
+          "filter": 0.0,
+          "history": 0.25,
+          "location": 0.3,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.5354285018100807,
+        "weights": {
+          "category": 0.05,
+          "char": 0.8,
+          "filter": 0.18,
+          "history": 0.25,
+          "location": 0.3,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.5354285018100807,
+        "weights": {
+          "category": 0.14,
+          "char": 0.8,
+          "filter": 0.0,
+          "history": 0.25,
+          "location": 0.3,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.5354285018100807,
+        "weights": {
+          "category": 0.14,
+          "char": 0.8,
+          "filter": 0.18,
+          "history": 0.25,
+          "location": 0.3,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.5293173906989697,
+        "weights": {
+          "category": 0.05,
+          "char": 0.8,
+          "filter": 0.0,
+          "history": 0.6,
+          "location": 0.3,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.5293173906989697,
+        "weights": {
+          "category": 0.14,
+          "char": 0.8,
+          "filter": 0.0,
+          "history": 0.6,
+          "location": 0.3,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.527650724032303,
+        "weights": {
+          "category": 0.05,
+          "char": 0.8,
+          "filter": 0.18,
+          "history": 0.6,
+          "location": 0.3,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.527650724032303,
+        "weights": {
+          "category": 0.14,
+          "char": 0.8,
+          "filter": 0.18,
+          "history": 0.6,
+          "location": 0.3,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.503423872180451,
+        "weights": {
+          "category": 0.05,
+          "char": 0.8,
+          "filter": 0.0,
+          "history": 0.95,
+          "location": 0.3,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.503423872180451,
+        "weights": {
+          "category": 0.14,
+          "char": 0.8,
+          "filter": 0.0,
+          "history": 0.95,
+          "location": 0.3,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.5017572055137843,
+        "weights": {
+          "category": 0.05,
+          "char": 0.8,
+          "filter": 0.18,
+          "history": 0.95,
+          "location": 0.3,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.5017572055137843,
+        "weights": {
+          "category": 0.14,
+          "char": 0.8,
+          "filter": 0.18,
+          "history": 0.95,
+          "location": 0.3,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.4739655388471178,
+        "weights": {
+          "category": 0.05,
+          "char": 1.05,
+          "filter": 0.0,
+          "history": 0.0,
+          "location": 0.3,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.4739655388471178,
+        "weights": {
+          "category": 0.05,
+          "char": 1.05,
+          "filter": 0.18,
+          "history": 0.0,
+          "location": 0.3,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.4739655388471178,
+        "weights": {
+          "category": 0.14,
+          "char": 1.05,
+          "filter": 0.0,
+          "history": 0.0,
+          "location": 0.3,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.4739655388471178,
+        "weights": {
+          "category": 0.14,
+          "char": 1.05,
+          "filter": 0.18,
+          "history": 0.0,
+          "location": 0.3,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.4714655388471178,
+        "weights": {
+          "category": 0.14,
+          "char": 1.05,
+          "filter": 0.0,
+          "history": 0.25,
+          "location": 0.3,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.4714655388471178,
+        "weights": {
+          "category": 0.14,
+          "char": 1.05,
+          "filter": 0.18,
+          "history": 0.25,
+          "location": 0.3,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.47063220551378443,
+        "weights": {
+          "category": 0.05,
+          "char": 1.05,
+          "filter": 0.0,
+          "history": 0.25,
+          "location": 0.3,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.47063220551378443,
+        "weights": {
+          "category": 0.05,
+          "char": 1.05,
+          "filter": 0.18,
+          "history": 0.25,
+          "location": 0.3,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.4652155388471178,
+        "weights": {
+          "category": 0.05,
+          "char": 1.05,
+          "filter": 0.0,
+          "history": 0.6,
+          "location": 0.3,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.4652155388471178,
+        "weights": {
+          "category": 0.05,
+          "char": 1.05,
+          "filter": 0.18,
+          "history": 0.6,
+          "location": 0.3,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.4652155388471178,
+        "weights": {
+          "category": 0.14,
+          "char": 1.05,
+          "filter": 0.0,
+          "history": 0.6,
+          "location": 0.3,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.4652155388471178,
+        "weights": {
+          "category": 0.14,
+          "char": 1.05,
+          "filter": 0.18,
+          "history": 0.6,
+          "location": 0.3,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.45715998329156227,
+        "weights": {
+          "category": 0.05,
+          "char": 1.05,
+          "filter": 0.0,
+          "history": 0.95,
+          "location": 0.3,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.45715998329156227,
+        "weights": {
+          "category": 0.05,
+          "char": 1.05,
+          "filter": 0.18,
+          "history": 0.95,
+          "location": 0.3,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.45715998329156227,
+        "weights": {
+          "category": 0.14,
+          "char": 1.05,
+          "filter": 0.0,
+          "history": 0.95,
+          "location": 0.3,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.45715998329156227,
+        "weights": {
+          "category": 0.14,
+          "char": 1.05,
+          "filter": 0.18,
+          "history": 0.95,
+          "location": 0.3,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.42176117376775274,
+        "weights": {
+          "category": 0.05,
+          "char": 0.55,
+          "filter": 0.0,
+          "history": 0.0,
+          "location": 0.1,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.42176117376775274,
+        "weights": {
+          "category": 0.14,
+          "char": 0.55,
+          "filter": 0.0,
+          "history": 0.0,
+          "location": 0.1,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.42009450710108603,
+        "weights": {
+          "category": 0.05,
+          "char": 0.55,
+          "filter": 0.18,
+          "history": 0.0,
+          "location": 0.1,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.42009450710108603,
+        "weights": {
+          "category": 0.14,
+          "char": 0.55,
+          "filter": 0.18,
+          "history": 0.0,
+          "location": 0.1,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.4145389515455305,
+        "weights": {
+          "category": 0.05,
+          "char": 0.55,
+          "filter": 0.0,
+          "history": 0.25,
+          "location": 0.1,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.4145389515455305,
+        "weights": {
+          "category": 0.14,
+          "char": 0.55,
+          "filter": 0.0,
+          "history": 0.25,
+          "location": 0.1,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.4128722848788638,
+        "weights": {
+          "category": 0.05,
+          "char": 0.55,
+          "filter": 0.18,
+          "history": 0.25,
+          "location": 0.1,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.4128722848788638,
+        "weights": {
+          "category": 0.14,
+          "char": 0.55,
+          "filter": 0.18,
+          "history": 0.25,
+          "location": 0.1,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.39361302561960454,
+        "weights": {
+          "category": 0.05,
+          "char": 0.55,
+          "filter": 0.0,
+          "history": 0.6,
+          "location": 0.1,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.39361302561960454,
+        "weights": {
+          "category": 0.14,
+          "char": 0.55,
+          "filter": 0.0,
+          "history": 0.6,
+          "location": 0.1,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.39111302561960454,
+        "weights": {
+          "category": 0.05,
+          "char": 0.55,
+          "filter": 0.18,
+          "history": 0.6,
+          "location": 0.1,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.39111302561960454,
+        "weights": {
+          "category": 0.14,
+          "char": 0.55,
+          "filter": 0.18,
+          "history": 0.6,
+          "location": 0.1,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.3649542954608744,
+        "weights": {
+          "category": 0.05,
+          "char": 0.8,
+          "filter": 0.0,
+          "history": 0.0,
+          "location": 0.1,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.3649542954608744,
+        "weights": {
+          "category": 0.05,
+          "char": 0.8,
+          "filter": 0.0,
+          "history": 0.25,
+          "location": 0.1,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.3649542954608744,
+        "weights": {
+          "category": 0.14,
+          "char": 0.8,
+          "filter": 0.0,
+          "history": 0.0,
+          "location": 0.1,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.3649542954608744,
+        "weights": {
+          "category": 0.14,
+          "char": 0.8,
+          "filter": 0.0,
+          "history": 0.25,
+          "location": 0.1,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.3606685811751601,
+        "weights": {
+          "category": 0.05,
+          "char": 0.8,
+          "filter": 0.18,
+          "history": 0.0,
+          "location": 0.1,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.3606685811751601,
+        "weights": {
+          "category": 0.05,
+          "char": 0.8,
+          "filter": 0.18,
+          "history": 0.25,
+          "location": 0.1,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.3606685811751601,
+        "weights": {
+          "category": 0.14,
+          "char": 0.8,
+          "filter": 0.18,
+          "history": 0.0,
+          "location": 0.1,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.3606685811751601,
+        "weights": {
+          "category": 0.14,
+          "char": 0.8,
+          "filter": 0.18,
+          "history": 0.25,
+          "location": 0.1,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.3507876287942077,
+        "weights": {
+          "category": 0.05,
+          "char": 0.8,
+          "filter": 0.0,
+          "history": 0.6,
+          "location": 0.1,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.3507876287942077,
+        "weights": {
+          "category": 0.14,
+          "char": 0.8,
+          "filter": 0.0,
+          "history": 0.6,
+          "location": 0.1,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.34900191450849344,
+        "weights": {
+          "category": 0.05,
+          "char": 0.8,
+          "filter": 0.18,
+          "history": 0.6,
+          "location": 0.1,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.34900191450849344,
+        "weights": {
+          "category": 0.14,
+          "char": 0.8,
+          "filter": 0.18,
+          "history": 0.6,
+          "location": 0.1,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.32979569504569506,
+        "weights": {
+          "category": 0.05,
+          "char": 0.55,
+          "filter": 0.0,
+          "history": 0.95,
+          "location": 0.1,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.32979569504569506,
+        "weights": {
+          "category": 0.14,
+          "char": 0.55,
+          "filter": 0.0,
+          "history": 0.95,
+          "location": 0.1,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.32690270815928707,
+        "weights": {
+          "category": 0.05,
+          "char": 0.55,
+          "filter": 0.0,
+          "history": 0.0,
+          "location": 0.02,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.32690270815928707,
+        "weights": {
+          "category": 0.14,
+          "char": 0.55,
+          "filter": 0.0,
+          "history": 0.0,
+          "location": 0.02,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.3252360414926204,
+        "weights": {
+          "category": 0.05,
+          "char": 0.55,
+          "filter": 0.18,
+          "history": 0.0,
+          "location": 0.02,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.3252360414926204,
+        "weights": {
+          "category": 0.14,
+          "char": 0.55,
+          "filter": 0.18,
+          "history": 0.0,
+          "location": 0.02,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.32479569504569505,
+        "weights": {
+          "category": 0.05,
+          "char": 0.55,
+          "filter": 0.18,
+          "history": 0.95,
+          "location": 0.1,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.32479569504569505,
+        "weights": {
+          "category": 0.14,
+          "char": 0.55,
+          "filter": 0.18,
+          "history": 0.95,
+          "location": 0.1,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.32356937482595377,
+        "weights": {
+          "category": 0.05,
+          "char": 0.55,
+          "filter": 0.0,
+          "history": 0.25,
+          "location": 0.02,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.32356937482595377,
+        "weights": {
+          "category": 0.14,
+          "char": 0.55,
+          "filter": 0.0,
+          "history": 0.25,
+          "location": 0.02,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.3202360414926204,
+        "weights": {
+          "category": 0.05,
+          "char": 0.55,
+          "filter": 0.18,
+          "history": 0.25,
+          "location": 0.02,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.3202360414926204,
+        "weights": {
+          "category": 0.14,
+          "char": 0.55,
+          "filter": 0.18,
+          "history": 0.25,
+          "location": 0.02,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.3140607769423559,
+        "weights": {
+          "category": 0.05,
+          "char": 1.05,
+          "filter": 0.0,
+          "history": 0.0,
+          "location": 0.1,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.3140607769423559,
+        "weights": {
+          "category": 0.14,
+          "char": 1.05,
+          "filter": 0.0,
+          "history": 0.0,
+          "location": 0.1,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.3134285714285714,
+        "weights": {
+          "category": 0.05,
+          "char": 0.8,
+          "filter": 0.0,
+          "history": 0.95,
+          "location": 0.1,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.3134285714285714,
+        "weights": {
+          "category": 0.14,
+          "char": 0.8,
+          "filter": 0.0,
+          "history": 0.95,
+          "location": 0.1,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.3107274436090226,
+        "weights": {
+          "category": 0.05,
+          "char": 1.05,
+          "filter": 0.18,
+          "history": 0.0,
+          "location": 0.1,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.3107274436090226,
+        "weights": {
+          "category": 0.14,
+          "char": 1.05,
+          "filter": 0.18,
+          "history": 0.0,
+          "location": 0.1,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.31009523809523815,
+        "weights": {
+          "category": 0.05,
+          "char": 0.8,
+          "filter": 0.18,
+          "history": 0.95,
+          "location": 0.1,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.31009523809523815,
+        "weights": {
+          "category": 0.14,
+          "char": 0.8,
+          "filter": 0.18,
+          "history": 0.95,
+          "location": 0.1,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.3065607769423559,
+        "weights": {
+          "category": 0.05,
+          "char": 1.05,
+          "filter": 0.0,
+          "history": 0.25,
+          "location": 0.1,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.3065607769423559,
+        "weights": {
+          "category": 0.14,
+          "char": 1.05,
+          "filter": 0.0,
+          "history": 0.25,
+          "location": 0.1,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.30600522138680036,
+        "weights": {
+          "category": 0.05,
+          "char": 1.05,
+          "filter": 0.0,
+          "history": 0.6,
+          "location": 0.1,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.30600522138680036,
+        "weights": {
+          "category": 0.14,
+          "char": 1.05,
+          "filter": 0.0,
+          "history": 0.6,
+          "location": 0.1,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.3032274436090226,
+        "weights": {
+          "category": 0.05,
+          "char": 1.05,
+          "filter": 0.18,
+          "history": 0.25,
+          "location": 0.1,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.3032274436090226,
+        "weights": {
+          "category": 0.14,
+          "char": 1.05,
+          "filter": 0.18,
+          "history": 0.25,
+          "location": 0.1,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.30100522138680036,
+        "weights": {
+          "category": 0.05,
+          "char": 1.05,
+          "filter": 0.18,
+          "history": 0.6,
+          "location": 0.1,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.30100522138680036,
+        "weights": {
+          "category": 0.14,
+          "char": 1.05,
+          "filter": 0.18,
+          "history": 0.6,
+          "location": 0.1,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.29700992063492065,
+        "weights": {
+          "category": 0.05,
+          "char": 0.55,
+          "filter": 0.0,
+          "history": 0.6,
+          "location": 0.02,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.29700992063492065,
+        "weights": {
+          "category": 0.14,
+          "char": 0.55,
+          "filter": 0.0,
+          "history": 0.6,
+          "location": 0.02,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.292843253968254,
+        "weights": {
+          "category": 0.05,
+          "char": 0.55,
+          "filter": 0.18,
+          "history": 0.6,
+          "location": 0.02,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.292843253968254,
+        "weights": {
+          "category": 0.14,
+          "char": 0.55,
+          "filter": 0.18,
+          "history": 0.6,
+          "location": 0.02,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.2874867028682818,
+        "weights": {
+          "category": 0.05,
+          "char": 1.05,
+          "filter": 0.0,
+          "history": 0.95,
+          "location": 0.1,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.2874867028682818,
+        "weights": {
+          "category": 0.14,
+          "char": 1.05,
+          "filter": 0.0,
+          "history": 0.95,
+          "location": 0.1,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.28582003620161517,
+        "weights": {
+          "category": 0.05,
+          "char": 1.05,
+          "filter": 0.18,
+          "history": 0.95,
+          "location": 0.1,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.28582003620161517,
+        "weights": {
+          "category": 0.14,
+          "char": 1.05,
+          "filter": 0.18,
+          "history": 0.95,
+          "location": 0.1,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.2775462266778056,
+        "weights": {
+          "category": 0.14,
+          "char": 0.8,
+          "filter": 0.0,
+          "history": 0.0,
+          "location": 0.02,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.27587956001113895,
+        "weights": {
+          "category": 0.05,
+          "char": 0.8,
+          "filter": 0.0,
+          "history": 0.0,
+          "location": 0.02,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.27587956001113895,
+        "weights": {
+          "category": 0.14,
+          "char": 0.8,
+          "filter": 0.18,
+          "history": 0.0,
+          "location": 0.02,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.2742128933444723,
+        "weights": {
+          "category": 0.05,
+          "char": 0.8,
+          "filter": 0.18,
+          "history": 0.0,
+          "location": 0.02,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.2731017822333612,
+        "weights": {
+          "category": 0.05,
+          "char": 0.8,
+          "filter": 0.0,
+          "history": 0.25,
+          "location": 0.02,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.2731017822333612,
+        "weights": {
+          "category": 0.14,
+          "char": 0.8,
+          "filter": 0.0,
+          "history": 0.25,
+          "location": 0.02,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.26986104149262047,
+        "weights": {
+          "category": 0.05,
+          "char": 0.8,
+          "filter": 0.0,
+          "history": 0.6,
+          "location": 0.02,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.26986104149262047,
+        "weights": {
+          "category": 0.14,
+          "char": 0.8,
+          "filter": 0.0,
+          "history": 0.6,
+          "location": 0.02,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.2697684489000279,
+        "weights": {
+          "category": 0.05,
+          "char": 0.8,
+          "filter": 0.18,
+          "history": 0.25,
+          "location": 0.02,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.2697684489000279,
+        "weights": {
+          "category": 0.14,
+          "char": 0.8,
+          "filter": 0.18,
+          "history": 0.25,
+          "location": 0.02,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.26486104149262046,
+        "weights": {
+          "category": 0.05,
+          "char": 0.8,
+          "filter": 0.18,
+          "history": 0.6,
+          "location": 0.02,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.26486104149262046,
+        "weights": {
+          "category": 0.14,
+          "char": 0.8,
+          "filter": 0.18,
+          "history": 0.6,
+          "location": 0.02,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.24111104149262047,
+        "weights": {
+          "category": 0.05,
+          "char": 1.05,
+          "filter": 0.0,
+          "history": 0.0,
+          "location": 0.02,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.24111104149262047,
+        "weights": {
+          "category": 0.14,
+          "char": 1.05,
+          "filter": 0.0,
+          "history": 0.0,
+          "location": 0.02,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.24083326371484268,
+        "weights": {
+          "category": 0.05,
+          "char": 1.05,
+          "filter": 0.0,
+          "history": 0.25,
+          "location": 0.02,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.24083326371484268,
+        "weights": {
+          "category": 0.14,
+          "char": 1.05,
+          "filter": 0.0,
+          "history": 0.25,
+          "location": 0.02,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.23990343915343915,
+        "weights": {
+          "category": 0.05,
+          "char": 0.55,
+          "filter": 0.0,
+          "history": 0.95,
+          "location": 0.02,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.23990343915343915,
+        "weights": {
+          "category": 0.05,
+          "char": 0.55,
+          "filter": 0.18,
+          "history": 0.95,
+          "location": 0.02,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.23990343915343915,
+        "weights": {
+          "category": 0.14,
+          "char": 0.55,
+          "filter": 0.0,
+          "history": 0.95,
+          "location": 0.02,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.23990343915343915,
+        "weights": {
+          "category": 0.14,
+          "char": 0.55,
+          "filter": 0.18,
+          "history": 0.95,
+          "location": 0.02,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.2394443748259538,
+        "weights": {
+          "category": 0.05,
+          "char": 1.05,
+          "filter": 0.18,
+          "history": 0.0,
+          "location": 0.02,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.2394443748259538,
+        "weights": {
+          "category": 0.14,
+          "char": 1.05,
+          "filter": 0.18,
+          "history": 0.0,
+          "location": 0.02,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.23749993038150932,
+        "weights": {
+          "category": 0.05,
+          "char": 1.05,
+          "filter": 0.18,
+          "history": 0.25,
+          "location": 0.02,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.23749993038150932,
+        "weights": {
+          "category": 0.14,
+          "char": 1.05,
+          "filter": 0.18,
+          "history": 0.25,
+          "location": 0.02,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.23536177248677248,
+        "weights": {
+          "category": 0.05,
+          "char": 0.8,
+          "filter": 0.0,
+          "history": 0.95,
+          "location": 0.02,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.23536177248677248,
+        "weights": {
+          "category": 0.05,
+          "char": 0.8,
+          "filter": 0.18,
+          "history": 0.95,
+          "location": 0.02,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.23536177248677248,
+        "weights": {
+          "category": 0.14,
+          "char": 0.8,
+          "filter": 0.0,
+          "history": 0.95,
+          "location": 0.02,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.23536177248677248,
+        "weights": {
+          "category": 0.14,
+          "char": 0.8,
+          "filter": 0.18,
+          "history": 0.95,
+          "location": 0.02,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.23277770815928714,
+        "weights": {
+          "category": 0.05,
+          "char": 1.05,
+          "filter": 0.0,
+          "history": 0.6,
+          "location": 0.02,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.23277770815928714,
+        "weights": {
+          "category": 0.14,
+          "char": 1.05,
+          "filter": 0.0,
+          "history": 0.6,
+          "location": 0.02,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.23111104149262046,
+        "weights": {
+          "category": 0.05,
+          "char": 1.05,
+          "filter": 0.18,
+          "history": 0.6,
+          "location": 0.02,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.23111104149262046,
+        "weights": {
+          "category": 0.14,
+          "char": 1.05,
+          "filter": 0.18,
+          "history": 0.6,
+          "location": 0.02,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.22277770815928713,
+        "weights": {
+          "category": 0.05,
+          "char": 1.05,
+          "filter": 0.0,
+          "history": 0.95,
+          "location": 0.02,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.22277770815928713,
+        "weights": {
+          "category": 0.05,
+          "char": 1.05,
+          "filter": 0.18,
+          "history": 0.95,
+          "location": 0.02,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.22277770815928713,
+        "weights": {
+          "category": 0.14,
+          "char": 1.05,
+          "filter": 0.0,
+          "history": 0.95,
+          "location": 0.02,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      },
+      {
+        "recall_at_50": 0.22277770815928713,
+        "weights": {
+          "category": 0.14,
+          "char": 1.05,
+          "filter": 0.18,
+          "history": 0.95,
+          "location": 0.02,
+          "popularity": 0.03,
+          "word": 1.0
+        }
+      }
+    ]
+  }
+}
