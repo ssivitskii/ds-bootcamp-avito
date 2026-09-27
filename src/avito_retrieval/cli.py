@@ -58,7 +58,7 @@ def build_parser() -> argparse.ArgumentParser:
     reranker.add_argument("--reranker-config", default="reranker_config.json")
     reranker.add_argument("--weights-json", default="artifacts/evaluation.json")
     reranker.add_argument(
-        "--output", default="artifacts/improvement/round3/evaluation.reranker.json"
+        "--output", default="artifacts/improvement/round4/evaluation.reranker.json"
     )
     reranker.add_argument("--cache-dir", default="cache")
     reranker.add_argument("--rebuild-cache", action="store_true")
@@ -186,6 +186,7 @@ def _predict(args: argparse.Namespace) -> dict[str, Any]:
             predictions = predict_reranked(
                 model,
                 train,
+                items,
                 queries,
                 settings,
                 reranker,

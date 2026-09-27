@@ -14,7 +14,7 @@ import pandas as pd
 from sklearn.ensemble import HistGradientBoostingClassifier
 from threadpoolctl import threadpool_limits
 
-from .constants import QUERY_COLUMNS
+from .constants import ITEM_COLUMNS, QUERY_COLUMNS
 from .evaluation import evaluation_corpus, limit_units, make_query_units, training_without_folds
 from .improvement import (
     FEATURE_INDEX,
@@ -49,7 +49,7 @@ LOCALITY_FEATURE_NAMES = (
     "microcat_locality_prior",
     "query_locality_x_microcat_locality_prior",
 )
-RERANK_FEATURE_NAMES = (
+BASE_RERANK_FEATURE_NAMES = (
     *RAW_FEATURE_NAMES,
     "base_score",
     *(f"relative_{name}" for name in RELATIVE_FEATURE_NAMES),
@@ -60,6 +60,30 @@ RERANK_FEATURE_NAMES = (
     *(f"query_max_{name}" for name in RELATIVE_FEATURE_NAMES),
     *LOCALITY_FEATURE_NAMES,
 )
+EXTRA_FEATURE_NAMES = (
+    "log_price",
+    "rating",
+    "log_reviews",
+    "phone_hidden",
+    "message_forbidden",
+    "exact_location",
+    "category_match",
+    "log_distance_km",
+    "delivery_query",
+    "global_category_query",
+    "log_query_tokens",
+    "log_title_tokens",
+    "log_query_characters",
+    "word_unigram_coverage",
+    "word_unigram_idf_coverage",
+    "title_unigram_coverage",
+    "word_vocab_bm25_length_norm",
+)
+# Kept as a public alias for cached round-3 artifacts and downstream notebooks.
+RERANK_FEATURE_NAMES = BASE_RERANK_FEATURE_NAMES
+EXTENDED_RERANK_FEATURE_NAMES = (*BASE_RERANK_FEATURE_NAMES, *EXTRA_FEATURE_NAMES)
+BASE_FEATURE_SCHEMA = "hgb-locality-v1"
+EXTENDED_FEATURE_SCHEMA = "hgb-metadata-coverage-v2"
 
 
 def validate_reranker_config(config: dict[str, Any]) -> None:
@@ -69,7 +93,8 @@ def validate_reranker_config(config: dict[str, Any]) -> None:
         raise ValueError(f"Missing reranker config keys: {sorted(missing)}")
     if not bool(config["enabled"]):
         raise ValueError("Reranker config is disabled")
-    if int(config["format_version"]) != 1:
+    version = int(config["format_version"])
+    if version not in {1, 2}:
         raise ValueError("Unsupported reranker config format")
     training = config["training"]
     for name in (
@@ -100,13 +125,63 @@ def validate_reranker_config(config: dict[str, Any]) -> None:
         str(training["expected_unit_sha256"]),
         *(str(value) for value in evaluation["expected_unit_sha256"].values()),
     ]
-    if any(len(value) != 64 or any(char not in "0123456789abcdef" for char in value) for value in hashes):
-        raise ValueError("Reranker unit hashes must be lowercase SHA-256 values")
-    if str(config["features"].get("schema")) != "hgb-locality-v1":
+    schema = str(config["features"].get("schema"))
+    if schema not in {BASE_FEATURE_SCHEMA, EXTENDED_FEATURE_SCHEMA}:
         raise ValueError("Unsupported reranker feature schema")
+    if version == 1 and schema != BASE_FEATURE_SCHEMA:
+        raise ValueError("Reranker format 1 requires the 30-feature schema")
+    if version == 2:
+        if schema != EXTENDED_FEATURE_SCHEMA:
+            raise ValueError("Reranker format 2 requires the 47-feature schema")
+        for name in ("candidate_pool", "bundle_batch_size"):
+            if name not in training:
+                raise ValueError(f"Missing reranker training key: {name}")
+        for section in ("baseline", "inference"):
+            if section not in config:
+                raise ValueError(f"Missing reranker config section: {section}")
+        baseline = config["baseline"]
+        for name in (
+            "feature_schema",
+            "training_limit",
+            "expected_unit_sha256",
+            "provenance_artifact_sha256",
+            "provenance_commit",
+            "candidate_pool",
+            "blend",
+            "model",
+        ):
+            if name not in baseline:
+                raise ValueError(f"Missing reranker baseline key: {name}")
+        if str(baseline["feature_schema"]) != BASE_FEATURE_SCHEMA:
+            raise ValueError("Frozen baseline must use the 30-feature schema")
+        if int(baseline["model"].get("thread_limit", 0)) != 4:
+            raise ValueError("Frozen baseline requires thread_limit=4")
+        if (
+            int(training["candidate_pool"]) <= 0
+            or int(baseline["candidate_pool"]) <= 0
+            or int(config["inference"].get("candidate_pool", 0)) <= 0
+        ):
+            raise ValueError("Candidate pools must be positive")
+        if int(training["bundle_batch_size"]) <= 0:
+            raise ValueError("Training bundle_batch_size must be positive")
+        if int(config["inference"].get("bundle_batch_size", 0)) <= 0:
+            raise ValueError("Inference bundle_batch_size must be positive")
+        hashes.append(str(baseline["expected_unit_sha256"]))
+        hashes.append(str(baseline["provenance_artifact_sha256"]))
+        for name in ("consumed_rounds", "candidate_contract"):
+            if name not in evaluation:
+                raise ValueError(f"Missing reranker evaluation key: {name}")
+        if str(evaluation["candidate_contract"]) != "additive":
+            raise ValueError("Round-4 reranker requires the additive candidate contract")
+    if any(
+        len(value) != 64
+        or any(char not in "0123456789abcdef" for char in value)
+        for value in hashes
+    ):
+        raise ValueError("Reranker unit hashes must be lowercase SHA-256 values")
     if int(config["model"].get("thread_limit", 0)) != 4:
         raise ValueError("Frozen reranker requires thread_limit=4")
-    if len(RERANK_FEATURE_NAMES) != 30:
+    if len(BASE_RERANK_FEATURE_NAMES) != 30 or len(EXTENDED_RERANK_FEATURE_NAMES) != 47:
         raise AssertionError("Frozen reranker must have exactly 30 features")
 
 
@@ -119,6 +194,15 @@ class LocalityFeatures:
     heldout_text_groups: int
     fit_heldout_text_overlap: int
     global_exact_location_rate: float
+
+
+@dataclass
+class ExtraFeatures:
+    rows: list[np.ndarray]
+    fixed_union_items: int
+    location_centers: int
+    median_word_vocab_nnz: float
+    unigram_vocabulary: int
 
 
 @dataclass
@@ -258,6 +342,157 @@ def build_locality_features(
     )
 
 
+def feature_names_for_config(config: dict[str, Any]) -> tuple[str, ...]:
+    schema = str(config["features"]["schema"])
+    if schema == BASE_FEATURE_SCHEMA:
+        return BASE_RERANK_FEATURE_NAMES
+    if schema == EXTENDED_FEATURE_SCHEMA:
+        return EXTENDED_RERANK_FEATURE_NAMES
+    raise ValueError(f"Unsupported reranker feature schema: {schema}")
+
+
+def build_extra_features(
+    model: HybridRetriever,
+    fixed_union_corpus: pd.DataFrame,
+    queries: pd.DataFrame,
+    bundle: PackedFeatureBundle,
+) -> ExtraFeatures:
+    """Build the frozen 13 metadata and four lexical-coverage features.
+
+    Location centers always come from the fixed train+benchmark union. Candidate
+    metadata is then reindexed to the fitted model's item order, so offline and
+    benchmark-only inference use the same definition without assuming equal catalogs.
+    """
+    if len(queries) != len(bundle.rows):
+        raise ValueError("Queries and packed rows must have identical length")
+    assert model.item_ids is not None
+    assert model.word_vectorizer is not None
+    assert model.word_items is not None
+    assert model.title_items is not None
+    if not np.array_equal(bundle.item_ids, model.item_ids):
+        raise ValueError("Packed bundle item universe differs from fitted model")
+
+    corpus = fixed_union_corpus[ITEM_COLUMNS].drop_duplicates("item_id", keep="first").copy()
+    corpus["item_id"] = corpus["item_id"].astype(str)
+    numeric_columns = (
+        "item_price",
+        "item_rating",
+        "item_rating_reviews_count",
+        "item_latitude",
+        "item_longitude",
+        "item_is_phone_hidden",
+        "item_is_message_forbidden",
+    )
+    for name in numeric_columns:
+        corpus[name] = pd.to_numeric(corpus[name], errors="coerce")
+    centers = corpus.groupby("item_location_id", sort=True)[
+        ["item_latitude", "item_longitude"]
+    ].median()
+    indexed = corpus.set_index("item_id")
+    if not indexed.index.is_unique:
+        raise ValueError("Fixed union item IDs must be unique")
+    missing = np.setdiff1d(model.item_ids, indexed.index.to_numpy(dtype=str))
+    if len(missing):
+        raise ValueError(f"Fixed union is missing {len(missing)} fitted catalog items")
+    items = indexed.reindex(model.item_ids)
+
+    price = np.log1p(items["item_price"].clip(lower=0, upper=1e12).to_numpy(float))
+    rating = items["item_rating"].to_numpy(float)
+    reviews = np.log1p(
+        items["item_rating_reviews_count"].clip(lower=0).to_numpy(float)
+    )
+    latitude = np.radians(items["item_latitude"].to_numpy(float))
+    longitude = np.radians(items["item_longitude"].to_numpy(float))
+    phone_hidden = items["item_is_phone_hidden"].to_numpy(float)
+    message_forbidden = items["item_is_message_forbidden"].to_numpy(float)
+    item_locations = items["item_location_id"].to_numpy()
+    item_categories = items["item_category_id"].to_numpy()
+    title_tokens = np.log1p(
+        items["item_title_raw"]
+        .map(lambda value: len(normalize_text(value).split()))
+        .to_numpy(float)
+    )
+
+    vocabulary = model.word_vectorizer.get_feature_names_out()
+    unigram = np.fromiter(
+        (" " not in name for name in vocabulary), dtype=bool, count=len(vocabulary)
+    )
+    idf = model.word_vectorizer.idf_.astype(np.float64, copy=False)
+    document_nnz = np.asarray(model.word_items.getnnz(axis=1)).ravel().astype(np.float64)
+    median_nnz = float(np.median(document_nnz))
+    if median_nnz <= 0:
+        raise AssertionError("Fixed word index has no vocabulary entries")
+    length_norm = (1.0 / (0.25 + 0.75 * document_nnz / median_nnz)).astype(np.float32)
+    normalized_queries = queries["search_query"].map(normalize_text).tolist()
+    query_matrix = model.word_vectorizer.transform(normalized_queries).tocsr()
+
+    rows: list[np.ndarray] = []
+    for row_number, (query, packed_row) in enumerate(
+        zip(queries.itertuples(index=False), bundle.rows, strict=True)
+    ):
+        positions = packed_row.positions
+        count = len(positions)
+        query_text = normalized_queries[row_number]
+        location = int(query.search_location_id)
+        if location in centers.index:
+            query_latitude, query_longitude = np.radians(
+                centers.loc[location].to_numpy(float)
+            )
+            haversine = (
+                np.sin((latitude[positions] - query_latitude) / 2) ** 2
+                + np.cos(query_latitude)
+                * np.cos(latitude[positions])
+                * np.sin((longitude[positions] - query_longitude) / 2) ** 2
+            )
+            distance = np.log1p(
+                6371.0 * 2 * np.arcsin(np.sqrt(np.clip(haversine, 0, 1)))
+            )
+        else:
+            distance = np.full(count, np.nan)
+        metadata = np.column_stack(
+            [
+                price[positions],
+                rating[positions],
+                reviews[positions],
+                phone_hidden[positions],
+                message_forbidden[positions],
+                item_locations[positions] == location,
+                item_categories[positions] == int(query.search_category),
+                distance,
+                np.full(count, int(query.search_is_delivery_search)),
+                np.full(count, int(query.search_category) == 0),
+                np.full(count, np.log1p(len(query_text.split()))),
+                title_tokens[positions],
+                np.full(count, np.log1p(len(query_text))),
+            ]
+        ).astype(np.float32)
+
+        start, end = query_matrix.indptr[row_number : row_number + 2]
+        query_indices = query_matrix.indices[start:end]
+        query_indices = query_indices[unigram[query_indices]]
+        coverage = np.zeros((count, 4), dtype=np.float32)
+        coverage[:, 3] = length_norm[positions]
+        if len(query_indices):
+            word_hits = model.word_items[positions][:, query_indices].getnnz(axis=1)
+            title_hits = model.title_items[positions][:, query_indices].getnnz(axis=1)
+            coverage[:, 0] = np.asarray(word_hits).ravel() / len(query_indices)
+            coverage[:, 2] = np.asarray(title_hits).ravel() / len(query_indices)
+            denominator = float(idf[query_indices].sum())
+            if denominator > 0:
+                present = model.word_items[positions][:, query_indices].astype(bool)
+                coverage[:, 1] = (
+                    np.asarray(present @ idf[query_indices]).ravel() / denominator
+                )
+        rows.append(np.column_stack([metadata, coverage]).astype(np.float32, copy=False))
+    return ExtraFeatures(
+        rows=rows,
+        fixed_union_items=len(corpus),
+        location_centers=len(centers),
+        median_word_vocab_nnz=median_nnz,
+        unigram_vocabulary=int(unigram.sum()),
+    )
+
+
 def _row_matrix(raw: np.ndarray, base: np.ndarray, locality: np.ndarray) -> np.ndarray:
     maximum = raw.max(axis=0)
     relative = raw[:, :6] / np.maximum(maximum[:6], 1e-6)
@@ -283,9 +518,16 @@ def prepare_features(
     config: dict[str, Any],
     *,
     training: bool,
+    extra: ExtraFeatures | None = None,
 ) -> PreparedFeatures:
     if len(locality.rows) != len(bundle.rows):
         raise ValueError("Locality and packed feature rows must align")
+    feature_names = feature_names_for_config(config)
+    uses_extra = str(config["features"]["schema"]) == EXTENDED_FEATURE_SCHEMA
+    if uses_extra and (extra is None or len(extra.rows) != len(bundle.rows)):
+        raise ValueError("Extended reranker requires aligned extra feature rows")
+    if not uses_extra and extra is not None:
+        raise ValueError("30-feature reranker does not accept extra feature rows")
     chunks: list[np.ndarray] = []
     label_chunks: list[np.ndarray] = []
     weight_chunks: list[np.ndarray] = []
@@ -302,6 +544,12 @@ def prepare_features(
         labels = np.isin(bundle.item_ids[positions], bundle.relevant[row_number])
         raw = row.values[local][:, raw_columns]
         matrix = _row_matrix(raw, base[local], locality.rows[row_number][local])
+        if extra is not None:
+            if len(extra.rows[row_number]) != len(row.positions):
+                raise ValueError("Extra feature row does not align with packed positions")
+            matrix = np.column_stack([matrix, extra.rows[row_number][local]]).astype(
+                np.float32, copy=False
+            )
         weights = np.ones(len(local), dtype=np.float32)
         weights[labels] = float(training_config["positive_weight_numerator"]) / max(
             1, len(bundle.relevant[row_number])
@@ -325,10 +573,10 @@ def prepare_features(
         positions_by_row.append(positions)
         base_by_row.append(base[local])
         target_counts.append(len(bundle.relevant[row_number]))
-    matrix = np.concatenate(chunks) if chunks else np.empty((0, len(RERANK_FEATURE_NAMES)), np.float32)
+    matrix = np.concatenate(chunks) if chunks else np.empty((0, len(feature_names)), np.float32)
     labels = np.concatenate(label_chunks) if label_chunks else np.empty(0, np.uint8)
     weights = np.concatenate(weight_chunks) if weight_chunks else np.empty(0, np.float32)
-    if matrix.shape[1] != len(RERANK_FEATURE_NAMES):
+    if matrix.shape[1] != len(feature_names):
         raise AssertionError("Unexpected reranker feature width")
     return PreparedFeatures(
         matrix,
@@ -441,6 +689,80 @@ def select_round3_units(
     return selected
 
 
+def select_fresh_units(
+    train: pd.DataFrame,
+    fold: int,
+    config: dict[str, Any],
+) -> pd.DataFrame:
+    """Select a later cold sample after every registered earlier text-cluster round."""
+    evaluation = config["evaluation"]
+    if int(config["format_version"]) == 1:
+        return select_round3_units(train, fold, config)
+    configured_folds = {int(value) for value in evaluation["folds"]}
+    if fold not in configured_folds:
+        raise ValueError(f"Fold {fold} is not configured for evaluation")
+    limit = int(evaluation["units_per_fold"])
+    modulo = int(config["training"]["fold_modulo"])
+    seed = int(evaluation["selection_seed_base"]) + fold
+    rounds = int(evaluation["consumed_rounds"][str(fold)])
+    all_units = make_query_units(train, fold, modulo)
+    remaining = all_units
+    consumed_texts: set[str] = set()
+    for _ in range(rounds):
+        consumed = limit_units(remaining, limit, seed)
+        consumed_texts.update(consumed["search_query"].map(normalize_text))
+        remaining = all_units[
+            ~all_units["search_query"].map(normalize_text).isin(consumed_texts)
+        ]
+    selected = limit_units(remaining, limit, seed)
+    selected_texts = set(selected["search_query"].map(normalize_text))
+    if selected_texts & consumed_texts:
+        raise AssertionError("Fresh sample overlaps a consumed text cluster")
+    if len(selected) < limit:
+        raise ValueError(
+            f"Fold {fold} has only {len(selected)} units after {rounds} exclusions"
+        )
+    return selected
+
+
+def _settings_with_pool(settings: dict[str, Any], pool: int) -> dict[str, Any]:
+    selected = copy.deepcopy(settings)
+    selected["pool"] = int(pool)
+    return selected
+
+
+def _combine_bundles(parts: list[PackedFeatureBundle], fold: int) -> PackedFeatureBundle:
+    if not parts:
+        raise ValueError("Cannot combine an empty bundle list")
+    item_ids = parts[0].item_ids
+    slice_names = set(parts[0].slices)
+    for part in parts[1:]:
+        if not np.array_equal(part.item_ids, item_ids):
+            raise ValueError("Batch bundles have different item universes")
+        if set(part.slices) != slice_names:
+            raise ValueError("Batch bundles have different slice schemas")
+    return PackedFeatureBundle(
+        fold=fold,
+        item_ids=item_ids.copy(),
+        rows=[row for part in parts for row in part.rows],
+        relevant=[values for part in parts for values in part.relevant],
+        slices={
+            name: np.concatenate([part.slices[name] for part in parts])
+            for name in parts[0].slices
+        },
+    )
+
+
+def _slice_bundle(bundle: PackedFeatureBundle, stop: int) -> PackedFeatureBundle:
+    return PackedFeatureBundle(
+        fold=bundle.fold,
+        item_ids=bundle.item_ids.copy(),
+        rows=bundle.rows[:stop],
+        relevant=bundle.relevant[:stop],
+        slices={name: values[:stop] for name, values in bundle.slices.items()},
+    )
+
+
 def _reranker_cache_root(
     data_dir: str | Path,
     cache_dir: str | Path,
@@ -544,26 +866,48 @@ def _bundle_for_units(
     cache_path: Path,
     *,
     rebuild: bool,
+    pool: int | None = None,
+    batch_size: int | None = None,
 ) -> PackedFeatureBundle:
     if cache_path.exists() and not rebuild:
         bundle = joblib.load(cache_path)
         if bundle.relevant != units["relevant_items"].tolist():
             raise ValueError(f"Cached bundle does not match units: {cache_path}")
+        if len(bundle.rows) != len(units):
+            raise ValueError(f"Cached bundle row count does not match units: {cache_path}")
+        assert model.item_ids is not None
+        if not np.array_equal(bundle.item_ids, model.item_ids):
+            raise ValueError(f"Cached bundle item order differs from model: {cache_path}")
         return bundle
     model.refit_behavior(train_fit)
-    rows = model.retrieve_improvement_features(
-        units[QUERY_COLUMNS],
-        max_pool=int(settings["pool"]),
-        geo_neighbor_options=(int(settings["geo_neighbors"]),),
-    )
-    bundle = pack_feature_rows(
-        model,
-        rows,
-        units,
-        train_fit,
-        fold,
-        (int(settings["geo_neighbors"]),),
-    )
+    active_pool = int(pool if pool is not None else settings["pool"])
+    active_batch = int(batch_size or len(units) or 1)
+    parts: list[PackedFeatureBundle] = []
+    for start in range(0, len(units), active_batch):
+        selected = units.iloc[start : start + active_batch].reset_index(drop=True)
+        rows = model.retrieve_improvement_features(
+            selected[QUERY_COLUMNS],
+            max_pool=active_pool,
+            geo_neighbor_options=(int(settings["geo_neighbors"]),),
+        )
+        parts.append(
+            pack_feature_rows(
+                model,
+                rows,
+                selected,
+                train_fit,
+                fold,
+                (int(settings["geo_neighbors"]),),
+            )
+        )
+        LOGGER.info(
+            "Packed reranker candidates: fold=%d rows=%d/%d pool=%d",
+            fold,
+            min(start + active_batch, len(units)),
+            len(units),
+            active_pool,
+        )
+    bundle = _combine_bundles(parts, fold)
     _atomic_joblib_dump(bundle, cache_path)
     return bundle
 
@@ -595,8 +939,16 @@ def train_or_load_reranker(
         artifact = joblib.load(artifact_path)
         if artifact.get("training_unit_sha256") != expected_unit_hash:
             raise ValueError("Cached reranker training units do not match current inputs")
-        if artifact.get("feature_names") != list(RERANK_FEATURE_NAMES):
+        if artifact.get("feature_names") != list(feature_names_for_config(config)):
             raise ValueError("Cached reranker feature schema is incompatible")
+        if str(config["features"]["schema"]) == EXTENDED_FEATURE_SCHEMA:
+            baseline = artifact.get("baseline")
+            if artifact.get("baseline_model") is None or not isinstance(baseline, dict):
+                raise ValueError("Cached extended reranker lacks its frozen baseline")
+            if baseline.get("training_unit_sha256") != str(
+                config["baseline"]["expected_unit_sha256"]
+            ):
+                raise ValueError("Cached baseline training units are incompatible")
         LOGGER.info("Loaded frozen reranker from %s", artifact_path)
         return artifact, cache_root, fingerprint
 
@@ -609,14 +961,19 @@ def train_or_load_reranker(
         cache_root,
         rebuild=rebuild,
     )
+    extended = str(config["features"]["schema"]) == EXTENDED_FEATURE_SCHEMA
+    training_pool = int(config["training"].get("candidate_pool", settings["pool"]))
+    training_settings = _settings_with_pool(settings, training_pool)
     bundle = _bundle_for_units(
         model,
         train_fit,
         units,
-        settings,
+        training_settings,
         int(config["training"]["fold"]),
-        cache_root / "train2400.joblib",
+        cache_root / f"train{len(units)}.joblib",
         rebuild=rebuild,
+        pool=training_pool,
+        batch_size=int(config["training"].get("bundle_batch_size", len(units))),
     )
     locality = build_locality_features(
         model,
@@ -626,7 +983,18 @@ def train_or_load_reranker(
         config,
         require_disjoint=True,
     )
-    prepared = prepare_features(bundle, locality, settings, config, training=True)
+    fixed_union = evaluation_corpus(benchmark_items, train)
+    extra = (
+        build_extra_features(model, fixed_union, units, bundle) if extended else None
+    )
+    prepared = prepare_features(
+        bundle,
+        locality,
+        training_settings,
+        config,
+        training=True,
+        extra=extra,
+    )
     LOGGER.info(
         "Training frozen HGB: rows=%d positives=%d features=%d",
         len(prepared.matrix),
@@ -634,12 +1002,63 @@ def train_or_load_reranker(
         prepared.matrix.shape[1],
     )
     ranker = fit_hist_gradient_boosting(prepared, config)
+    baseline_model = None
+    baseline_details = None
+    if extended:
+        baseline = config["baseline"]
+        baseline_limit = int(baseline["training_limit"])
+        baseline_units = units.iloc[:baseline_limit].reset_index(drop=True)
+        baseline_hash = unit_hash(baseline_units)
+        if baseline_hash != str(baseline["expected_unit_sha256"]):
+            raise AssertionError("Frozen 30-feature baseline units changed")
+        baseline_bundle = _slice_bundle(bundle, baseline_limit)
+        baseline_locality = build_locality_features(
+            model,
+            train_fit,
+            baseline_units,
+            baseline_bundle,
+            config,
+            require_disjoint=True,
+        )
+        baseline_config = copy.deepcopy(config)
+        baseline_config["features"]["schema"] = BASE_FEATURE_SCHEMA
+        baseline_config["model"] = copy.deepcopy(baseline["model"])
+        baseline_settings = _settings_with_pool(
+            settings, int(baseline["candidate_pool"])
+        )
+        baseline_prepared = prepare_features(
+            baseline_bundle,
+            baseline_locality,
+            baseline_settings,
+            baseline_config,
+            training=True,
+        )
+        baseline_model = fit_hist_gradient_boosting(
+            baseline_prepared, baseline_config
+        )
+        baseline_details = {
+            "feature_schema": BASE_FEATURE_SCHEMA,
+            "feature_names": list(BASE_RERANK_FEATURE_NAMES),
+            "training_limit": baseline_limit,
+            "training_unit_sha256": baseline_hash,
+            "training_rows": len(baseline_prepared.matrix),
+            "training_positives": int(baseline_prepared.labels.sum()),
+            "candidate_pool": int(baseline["candidate_pool"]),
+            "blend": float(baseline["blend"]),
+            "model_config": copy.deepcopy(baseline["model"]),
+            "historical_provenance": {
+                "artifact_sha256": str(baseline["provenance_artifact_sha256"]),
+                "commit": str(baseline["provenance_commit"]),
+            },
+        }
     artifact = {
-        "format": "avito-hgb-reranker-v1",
+        "format": "avito-hgb-reranker-v2" if extended else "avito-hgb-reranker-v1",
         "model": ranker,
+        "baseline_model": baseline_model,
+        "baseline": baseline_details,
         "config": copy.deepcopy(config),
-        "settings": copy.deepcopy(settings),
-        "feature_names": list(RERANK_FEATURE_NAMES),
+        "settings": copy.deepcopy(training_settings),
+        "feature_names": list(feature_names_for_config(config)),
         "training_unit_sha256": expected_unit_hash,
         "training_rows": len(prepared.matrix),
         "training_positives": int(prepared.labels.sum()),
@@ -650,6 +1069,16 @@ def train_or_load_reranker(
         "training_fit_text_groups": locality.fit_text_groups,
         "training_fit_heldout_text_overlap": locality.fit_heldout_text_overlap,
         "cache_fingerprint": fingerprint,
+        "extra_feature_provenance": (
+            {
+                "fixed_union_items": extra.fixed_union_items,
+                "location_centers": extra.location_centers,
+                "median_word_vocab_nnz": extra.median_word_vocab_nnz,
+                "unigram_vocabulary": extra.unigram_vocabulary,
+            }
+            if extra is not None
+            else None
+        ),
         "elapsed_seconds": time.perf_counter() - started,
     }
     _atomic_joblib_dump(artifact, artifact_path)
@@ -660,6 +1089,7 @@ def train_or_load_reranker(
 def predict_reranked(
     model: HybridRetriever,
     train: pd.DataFrame,
+    benchmark_items: pd.DataFrame,
     queries: pd.DataFrame,
     settings: dict[str, Any],
     reranker: dict[str, Any],
@@ -668,21 +1098,36 @@ def predict_reranked(
 ) -> list[list[str]]:
     config = reranker["config"]
     geo = int(settings["geo_neighbors"])
-    rows = model.retrieve_improvement_features(
-        queries,
-        max_pool=int(settings["pool"]),
-        geo_neighbor_options=(geo,),
-    )
+    inference_pool = int(config.get("inference", {}).get("candidate_pool", settings["pool"]))
+    inference_settings = _settings_with_pool(settings, inference_pool)
     units = queries.copy()
     units["relevant_items"] = [[] for _ in range(len(units))]
-    bundle = pack_feature_rows(
-        model,
-        rows,
-        units,
-        pd.DataFrame({"item_id": []}),
-        fold=-1,
-        geo_options=(geo,),
-    )
+    batch_size = int(config.get("inference", {}).get("bundle_batch_size", len(units)))
+    parts: list[PackedFeatureBundle] = []
+    for start in range(0, len(units), batch_size):
+        selected = units.iloc[start : start + batch_size].reset_index(drop=True)
+        rows = model.retrieve_improvement_features(
+            selected[QUERY_COLUMNS],
+            max_pool=inference_pool,
+            geo_neighbor_options=(geo,),
+        )
+        parts.append(
+            pack_feature_rows(
+                model,
+                rows,
+                selected,
+                pd.DataFrame({"item_id": []}),
+                fold=-1,
+                geo_options=(geo,),
+            )
+        )
+        LOGGER.info(
+            "Packed prediction candidates: rows=%d/%d pool=%d",
+            min(start + batch_size, len(units)),
+            len(units),
+            inference_pool,
+        )
+    bundle = _combine_bundles(parts, -1)
     locality = build_locality_features(
         model,
         train,
@@ -691,7 +1136,19 @@ def predict_reranked(
         config,
         require_disjoint=False,
     )
-    prepared = prepare_features(bundle, locality, settings, config, training=False)
+    extra = None
+    if str(config["features"]["schema"]) == EXTENDED_FEATURE_SCHEMA:
+        extra = build_extra_features(
+            model, evaluation_corpus(benchmark_items, train), queries, bundle
+        )
+    prepared = prepare_features(
+        bundle,
+        locality,
+        inference_settings,
+        config,
+        training=False,
+        extra=extra,
+    )
     predictions, _ = rank_prepared(
         reranker["model"],
         prepared,
@@ -709,6 +1166,92 @@ def _candidate_hash(prepared: PreparedFeatures) -> str:
         digest.update(np.asarray(positions, dtype="<i4").tobytes())
         digest.update(b"\n")
     return digest.hexdigest()
+
+
+@dataclass
+class PreparedComparison:
+    baseline: PreparedFeatures
+    candidate: PreparedFeatures
+    locality: LocalityFeatures
+    extra: ExtraFeatures
+    baseline_oracle: np.ndarray
+    candidate_oracle: np.ndarray
+    baseline_subset_candidate: bool
+
+
+def _candidate_oracle(
+    prepared: PreparedFeatures,
+    bundle: PackedFeatureBundle,
+) -> np.ndarray:
+    oracle = np.zeros(len(bundle.rows), dtype=np.float64)
+    for row_number, positions in enumerate(prepared.positions):
+        truth = set(bundle.relevant[row_number])
+        if truth:
+            candidate_ids = {str(bundle.item_ids[pos]) for pos in positions}
+            oracle[row_number] = len(candidate_ids & truth) / len(truth)
+    return oracle
+
+
+def prepare_reranker_comparison(
+    model: HybridRetriever,
+    ranker: dict[str, Any],
+    fixed_union_corpus: pd.DataFrame,
+    bundle: PackedFeatureBundle,
+    units: pd.DataFrame,
+    train_fit: pd.DataFrame,
+    settings: dict[str, Any],
+    config: dict[str, Any],
+) -> PreparedComparison:
+    """Prepare the frozen 30-feature baseline and 47-feature candidate independently."""
+    if ranker.get("baseline_model") is None or ranker.get("baseline") is None:
+        raise ValueError("Extended evaluation requires the frozen 30-feature baseline")
+    locality = build_locality_features(
+        model,
+        train_fit,
+        units,
+        bundle,
+        config,
+        require_disjoint=True,
+    )
+    extra = build_extra_features(model, fixed_union_corpus, units, bundle)
+    baseline_config = copy.deepcopy(config)
+    baseline_config["features"]["schema"] = BASE_FEATURE_SCHEMA
+    baseline_settings = _settings_with_pool(
+        settings, int(config["baseline"]["candidate_pool"])
+    )
+    candidate_settings = _settings_with_pool(
+        settings, int(config["inference"]["candidate_pool"])
+    )
+    baseline = prepare_features(
+        bundle,
+        locality,
+        baseline_settings,
+        baseline_config,
+        training=False,
+    )
+    candidate = prepare_features(
+        bundle,
+        locality,
+        candidate_settings,
+        config,
+        training=False,
+        extra=extra,
+    )
+    subset = all(
+        bool(np.isin(base, expanded, assume_unique=True).all())
+        for base, expanded in zip(
+            baseline.positions, candidate.positions, strict=True
+        )
+    )
+    return PreparedComparison(
+        baseline=baseline,
+        candidate=candidate,
+        locality=locality,
+        extra=extra,
+        baseline_oracle=_candidate_oracle(baseline, bundle),
+        candidate_oracle=_candidate_oracle(candidate, bundle),
+        baseline_subset_candidate=subset,
+    )
 
 
 def _cluster_bootstrap(
@@ -762,6 +1305,7 @@ def _pooled_cluster_bootstrap(
 def _fold_comparison(
     model: HybridRetriever,
     ranker: dict[str, Any],
+    fixed_union_corpus: pd.DataFrame,
     bundle: PackedFeatureBundle,
     units: pd.DataFrame,
     train_fit: pd.DataFrame,
@@ -770,41 +1314,83 @@ def _fold_comparison(
     *,
     bootstrap_seed: int,
 ) -> tuple[dict[str, Any], np.ndarray, np.ndarray]:
-    locality = build_locality_features(
-        model,
-        train_fit,
-        units,
-        bundle,
-        config,
-        require_disjoint=True,
-    )
-    prepared = prepare_features(bundle, locality, settings, config, training=False)
-    baseline_predictions, baseline = rank_prepared(
-        ranker["model"],
-        prepared,
-        bundle.item_ids,
-        bundle.relevant,
-        blend=0.0,
-        top_k=50,
-    )
-    predictions, enhanced = rank_prepared(
-        ranker["model"],
-        prepared,
-        bundle.item_ids,
-        bundle.relevant,
-        blend=float(config["blend"]),
-        top_k=50,
-    )
+    extended = str(config["features"]["schema"]) == EXTENDED_FEATURE_SCHEMA
+    if extended:
+        prepared_pair = prepare_reranker_comparison(
+            model,
+            ranker,
+            fixed_union_corpus,
+            bundle,
+            units,
+            train_fit,
+            settings,
+            config,
+        )
+        baseline_prepared = prepared_pair.baseline
+        candidate_prepared = prepared_pair.candidate
+        baseline_predictions, baseline = rank_prepared(
+            ranker["baseline_model"],
+            baseline_prepared,
+            bundle.item_ids,
+            bundle.relevant,
+            blend=float(config["baseline"]["blend"]),
+            top_k=50,
+        )
+        predictions, enhanced = rank_prepared(
+            ranker["model"],
+            candidate_prepared,
+            bundle.item_ids,
+            bundle.relevant,
+            blend=float(config["blend"]),
+            top_k=50,
+        )
+        baseline_oracle = prepared_pair.baseline_oracle
+        candidate_oracle = prepared_pair.candidate_oracle
+        candidate_ids_equal = all(
+            np.array_equal(left, right)
+            for left, right in zip(
+                baseline_prepared.positions,
+                candidate_prepared.positions,
+                strict=True,
+            )
+        )
+        baseline_subset_candidate = prepared_pair.baseline_subset_candidate
+        locality = prepared_pair.locality
+    else:
+        locality = build_locality_features(
+            model,
+            train_fit,
+            units,
+            bundle,
+            config,
+            require_disjoint=True,
+        )
+        baseline_prepared = prepare_features(
+            bundle, locality, settings, config, training=False
+        )
+        candidate_prepared = baseline_prepared
+        baseline_predictions, baseline = rank_prepared(
+            ranker["model"],
+            baseline_prepared,
+            bundle.item_ids,
+            bundle.relevant,
+            blend=0.0,
+            top_k=50,
+        )
+        predictions, enhanced = rank_prepared(
+            ranker["model"],
+            candidate_prepared,
+            bundle.item_ids,
+            bundle.relevant,
+            blend=float(config["blend"]),
+            top_k=50,
+        )
+        baseline_oracle = _candidate_oracle(baseline_prepared, bundle)
+        candidate_oracle = baseline_oracle.copy()
+        candidate_ids_equal = True
+        baseline_subset_candidate = True
     if len(baseline_predictions) != len(predictions):
         raise AssertionError("Baseline and reranker query counts differ")
-    # Both ranks use exactly the positions selected by the immutable candidate mask.
-    candidate_ids_equal = all(
-        np.array_equal(
-            row.positions[np.flatnonzero(score_packed_row(row, settings)[1])],
-            prepared.positions[row_number],
-        )
-        for row_number, row in enumerate(bundle.rows)
-    )
     delta = enhanced - baseline
     slice_minimum = int(config["evaluation"]["slice_minimum_queries"])
     slice_definitions = dict(bundle.slices)
@@ -832,23 +1418,25 @@ def _fold_comparison(
             "enhanced_recall_at_50": float(enhanced[selected].mean()),
             "delta": float(delta[selected].mean()),
         }
-    oracle = np.zeros(len(bundle.rows), dtype=np.float64)
-    for row_number, positions in enumerate(prepared.positions):
-        truth = set(bundle.relevant[row_number])
-        if truth:
-            candidate_ids = {str(bundle.item_ids[pos]) for pos in positions}
-            oracle[row_number] = len(candidate_ids & truth) / len(truth)
     normalized_queries = units["search_query"].map(normalize_text).to_numpy(dtype=str)
     report = {
         "queries": len(units),
         "clusters": len(set(normalized_queries)),
         "unit_sha256": unit_hash(units),
-        "candidate_universe_sha256": _candidate_hash(prepared),
+        "baseline_candidate_universe_sha256": _candidate_hash(baseline_prepared),
+        "candidate_universe_sha256": _candidate_hash(candidate_prepared),
         "candidate_ids_equal": candidate_ids_equal,
-        "candidate_rows": int(sum(map(len, prepared.positions))),
-        "baseline_candidate_oracle_recall": float(oracle.mean()),
-        "enhanced_candidate_oracle_recall": float(oracle.mean()),
-        "candidate_oracle_per_unit_equal": True,
+        "baseline_candidates_subset": baseline_subset_candidate,
+        "baseline_candidate_rows": int(sum(map(len, baseline_prepared.positions))),
+        "candidate_rows": int(sum(map(len, candidate_prepared.positions))),
+        "baseline_candidate_oracle_recall": float(baseline_oracle.mean()),
+        "enhanced_candidate_oracle_recall": float(candidate_oracle.mean()),
+        "candidate_oracle_per_unit_equal": bool(
+            np.array_equal(baseline_oracle, candidate_oracle)
+        ),
+        "candidate_oracle_per_unit_nondecreasing": bool(
+            np.all(candidate_oracle >= baseline_oracle)
+        ),
         "baseline_recall_at_50": float(baseline.mean()),
         "enhanced_recall_at_50": float(enhanced.mean()),
         "delta": float(delta.mean()),
@@ -906,10 +1494,20 @@ def run_reranker_evaluation(
     )
     evaluation = config["evaluation"]
     modulo = int(config["training"]["fold_modulo"])
+    fixed_union = evaluation_corpus(benchmark_items, train)
+    extended = str(config["features"]["schema"]) == EXTENDED_FEATURE_SCHEMA
+    evaluation_pool = (
+        max(
+            int(config["baseline"]["candidate_pool"]),
+            int(config["inference"]["candidate_pool"]),
+        )
+        if extended
+        else int(settings["pool"])
+    )
     comparisons: dict[str, Any] = {}
     pooled_values: list[tuple[np.ndarray, np.ndarray]] = []
     for fold in map(int, evaluation["folds"]):
-        units = select_round3_units(train, fold, config)
+        units = select_fresh_units(train, fold, config)
         expected_hash = str(evaluation["expected_unit_sha256"][str(fold)])
         actual_hash = unit_hash(units)
         if actual_hash != expected_hash:
@@ -930,12 +1528,16 @@ def run_reranker_evaluation(
             units,
             settings,
             fold,
-            cache_root / f"fold-{fold}-fresh-text-round3-v1-queries-{len(units)}.joblib",
+            cache_root
+            / f"fold-{fold}-{evaluation['sample_version']}-queries-{len(units)}.joblib",
             rebuild=rebuild,
+            pool=evaluation_pool,
+            batch_size=int(config["training"].get("bundle_batch_size", len(units))),
         )
         comparison, delta, normalized_queries = _fold_comparison(
             model,
             ranker,
+            fixed_union,
             bundle,
             units,
             train_fit,
@@ -963,6 +1565,18 @@ def run_reranker_evaluation(
         for details in comparison["slices"].values()
         if bool(details["guarded"])
     ]
+    candidate_contract = (
+        all(
+            bool(comparison["baseline_candidates_subset"])
+            and bool(comparison["candidate_oracle_per_unit_nondecreasing"])
+            for comparison in comparisons.values()
+        )
+        if extended
+        else all(
+            bool(comparison["candidate_ids_equal"])
+            for comparison in comparisons.values()
+        )
+    )
     gate = {
         "positive_delta_each_fold": all(
             float(comparison["delta"]) > 0 for comparison in comparisons.values()
@@ -972,10 +1586,7 @@ def run_reranker_evaluation(
         "pooled_cluster_ci_lower_above_zero": float(pooled_ci[0]) > 0,
         "all_fixed_slices_above_floor": bool(slice_deltas)
         and min(slice_deltas) >= slice_floor,
-        "candidate_ids_equal": all(
-            bool(comparison["candidate_ids_equal"])
-            for comparison in comparisons.values()
-        ),
+        "candidate_contract": candidate_contract,
         "unit_hashes_match": all(
             comparisons[str(fold)]["unit_sha256"]
             == evaluation["expected_unit_sha256"][str(fold)]
@@ -986,7 +1597,8 @@ def run_reranker_evaluation(
     return {
         "enabled": bool(gate["pass"]),
         "config": copy.deepcopy(config),
-        "feature_names": list(RERANK_FEATURE_NAMES),
+        "feature_names": list(feature_names_for_config(config)),
+        "baseline": copy.deepcopy(ranker.get("baseline")),
         "training": {
             key: ranker[key]
             for key in (
