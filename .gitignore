@@ -16,3 +16,4 @@ artifacts/independent_checks.json
 artifacts/reproduction.json
 artifacts/*.log
 artifacts/answer.reproduced.csv
+artifacts/improvement/

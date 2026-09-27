@@ -1,2441 +1,984 @@
 {
-  "config": {
-    "batch_size": 32,
-    "candidate_pool_per_channel": 120,
-    "char_max_features": 120000,
-    "char_min_df": 2,
-    "confirm_fold": 1,
-    "description_chars": 900,
-    "fallback_items": 120,
+  "baseline_settings": {
+    "exact_rescore": false,
+    "geo_neighbors": 3,
+    "pool": 120,
+    "weights": {
+      "category": 0.05,
+      "char": 0.55,
+      "filter": 0.0,
+      "history": 0.25,
+      "location": 0.7,
+      "microcat": 0.0,
+      "popularity": 0.03,
+      "title": 0.0,
+      "word": 1.0
+    }
+  },
+  "cache_fingerprint": "4e9f0d1419bf52af5b8e01b8ff8dbe2e8812599fa318b12d0ab2b44055283006",
+  "elapsed_seconds": 174.06910387508105,
+  "final_artifact": {
+    "baseline_preserved": true,
+    "byte_identical_warm_and_fresh": true,
+    "changed_rows_from_baseline": 2447,
+    "fresh_python_hash_seed": 2027,
+    "items_per_row": 50,
+    "rows": 2452,
+    "sha256": "52bf8a882cb7ed3f742a11a8d343c523370a4e61d0cdb0bddd66600df6a8a53f",
+    "valid": true
+  },
+  "folds": {
+    "audit": {
+      "baseline_candidate_oracle_recall": 0.8519861111111112,
+      "baseline_recall_at_50": 0.7667916666666668,
+      "delta": 0.05073611111111111,
+      "enhanced_candidate_oracle_recall": 0.9062638888888889,
+      "enhanced_recall_at_50": 0.8175277777777777,
+      "losses": 14,
+      "paired_bootstrap_95_ci": [
+        0.02934548611111111,
+        0.07230659722222221
+      ],
+      "queries": 600,
+      "slices": {
+        "filter_empty": {
+          "baseline_recall_at_50": 0.7778571428571428,
+          "delta": 0.03173469387755102,
+          "enhanced_recall_at_50": 0.8095918367346939,
+          "queries": 245
+        },
+        "filter_present": {
+          "baseline_recall_at_50": 0.7591549295774648,
+          "delta": 0.06384976525821595,
+          "enhanced_recall_at_50": 0.8230046948356808,
+          "queries": 355
+        },
+        "relevant_all_exact_location": {
+          "baseline_recall_at_50": 0.8322494669509595,
+          "delta": 0.056734186211798154,
+          "enhanced_recall_at_50": 0.8889836531627576,
+          "queries": 469
+        },
+        "relevant_all_history_seen": {
+          "baseline_recall_at_50": 0.7978632478632479,
+          "delta": 0.04807692307692308,
+          "enhanced_recall_at_50": 0.8459401709401709,
+          "queries": 156
+        },
+        "relevant_has_cross_location": {
+          "baseline_recall_at_50": 0.5324427480916031,
+          "delta": 0.02926208651399491,
+          "enhanced_recall_at_50": 0.561704834605598,
+          "queries": 131
+        },
+        "relevant_has_unseen": {
+          "baseline_recall_at_50": 0.7558746246246246,
+          "delta": 0.05167042042042042,
+          "enhanced_recall_at_50": 0.807545045045045,
+          "queries": 444
+        }
+      },
+      "ties": 537,
+      "wins": 49
+    },
+    "confirm": {
+      "baseline_candidate_oracle_recall": 0.8269722222222221,
+      "baseline_recall_at_50": 0.7285,
+      "delta": 0.05677777777777778,
+      "enhanced_candidate_oracle_recall": 0.8969444444444444,
+      "enhanced_recall_at_50": 0.7852777777777777,
+      "losses": 16,
+      "paired_bootstrap_95_ci": [
+        0.029995833333333333,
+        0.0828958333333333
+      ],
+      "queries": 600,
+      "slices": {
+        "filter_empty": {
+          "baseline_recall_at_50": 0.7406639004149378,
+          "delta": 0.05186721991701245,
+          "enhanced_recall_at_50": 0.7925311203319502,
+          "queries": 241
+        },
+        "filter_present": {
+          "baseline_recall_at_50": 0.7203342618384402,
+          "delta": 0.060074280408542256,
+          "enhanced_recall_at_50": 0.7804085422469823,
+          "queries": 359
+        },
+        "relevant_all_exact_location": {
+          "baseline_recall_at_50": 0.7915191740412979,
+          "delta": 0.07168141592920353,
+          "enhanced_recall_at_50": 0.8632005899705014,
+          "queries": 452
+        },
+        "relevant_all_history_seen": {
+          "baseline_recall_at_50": 0.6834319526627219,
+          "delta": 0.09763313609467456,
+          "enhanced_recall_at_50": 0.7810650887573964,
+          "queries": 169
+        },
+        "relevant_has_cross_location": {
+          "baseline_recall_at_50": 0.5360360360360361,
+          "delta": 0.011261261261261262,
+          "enhanced_recall_at_50": 0.5472972972972973,
+          "queries": 148
+        },
+        "relevant_has_unseen": {
+          "baseline_recall_at_50": 0.7461716937354989,
+          "delta": 0.04075792730085073,
+          "enhanced_recall_at_50": 0.7869296210363497,
+          "queries": 431
+        }
+      },
+      "ties": 531,
+      "wins": 53
+    },
+    "tune": {
+      "baseline_candidate_oracle_recall": 0.8326388888888888,
+      "baseline_recall_at_50": 0.7450277777777777,
+      "delta": 0.04669444444444444,
+      "enhanced_candidate_oracle_recall": 0.9007222222222223,
+      "enhanced_recall_at_50": 0.7917222222222222,
+      "losses": 13,
+      "paired_bootstrap_95_ci": [
+        0.02430555555555556,
+        0.0687784722222222
+      ],
+      "queries": 600,
+      "slices": {
+        "filter_empty": {
+          "baseline_recall_at_50": 0.7609756097560976,
+          "delta": 0.04552845528455284,
+          "enhanced_recall_at_50": 0.8065040650406503,
+          "queries": 205
+        },
+        "filter_present": {
+          "baseline_recall_at_50": 0.7367510548523206,
+          "delta": 0.04729957805907173,
+          "enhanced_recall_at_50": 0.7840506329113924,
+          "queries": 395
+        },
+        "relevant_all_exact_location": {
+          "baseline_recall_at_50": 0.795360824742268,
+          "delta": 0.04814432989690722,
+          "enhanced_recall_at_50": 0.8435051546391753,
+          "queries": 485
+        },
+        "relevant_all_history_seen": {
+          "baseline_recall_at_50": 0.7016339869281045,
+          "delta": 0.029411764705882353,
+          "enhanced_recall_at_50": 0.7310457516339869,
+          "queries": 102
+        },
+        "relevant_has_cross_location": {
+          "baseline_recall_at_50": 0.5327536231884058,
+          "delta": 0.04057971014492754,
+          "enhanced_recall_at_50": 0.5733333333333334,
+          "queries": 115
+        },
+        "relevant_has_unseen": {
+          "baseline_recall_at_50": 0.7539156626506024,
+          "delta": 0.05023427041499331,
+          "enhanced_recall_at_50": 0.8041499330655958,
+          "queries": 498
+        }
+      },
+      "ties": 540,
+      "wins": 47
+    }
+  },
+  "improvement_config": {
+    "audit_fold": 4,
+    "baseline_weights": {
+      "category": 0.05,
+      "char": 0.55,
+      "filter": 0.0,
+      "history": 0.25,
+      "location": 0.7,
+      "microcat": 0.0,
+      "popularity": 0.03,
+      "title": 0.0,
+      "word": 1.0
+    },
+    "bootstrap_samples": 2000,
+    "confirm_fold": 3,
+    "coordinate_passes": 3,
     "fold_modulo": 5,
-    "history_items_per_query": 30,
-    "history_neighbors": 12,
-    "item_params_chars": 1200,
-    "max_confirm_queries": 600,
-    "max_tune_queries": 600,
+    "geo_neighbor_options": [
+      3,
+      5
+    ],
+    "max_pool": 300,
+    "max_queries_per_fold": 600,
+    "microcat_neighbors": 16,
+    "pool_options": [
+      120,
+      240,
+      300
+    ],
     "seed": 20260927,
-    "top_k": 50,
-    "tune_fold": 0,
-    "tuning_grid": {
-      "category": [
-        0.05,
-        0.14
-      ],
+    "selection_slice_min_delta": -0.02,
+    "selection_slice_min_queries": 50,
+    "tune_fold": 2,
+    "weight_options": {
       "char": [
+        0.35,
         0.55,
-        0.8,
-        1.05
-      ],
-      "filter": [
-        0.0,
-        0.18
+        0.8
       ],
       "history": [
         0.0,
-        0.25,
-        0.6,
-        0.95
+        0.25
       ],
       "location": [
-        0.02,
-        0.1,
-        0.3,
-        0.7
+        0.7,
+        0.9,
+        1.2,
+        1.6,
+        2.2
+      ],
+      "microcat": [
+        0.0,
+        0.15,
+        0.4
+      ],
+      "title": [
+        0.0,
+        0.2,
+        0.5
       ]
-    },
-    "weights": {
-      "category": 0.12,
-      "char": 0.75,
-      "filter": 0.18,
-      "history": 0.55,
-      "location": 0.06,
-      "popularity": 0.03,
-      "word": 1.0
-    },
-    "word_max_features": 140000,
-    "word_min_df": 2
+    }
   },
-  "confirm": {
-    "ablations": {
-      "hybrid_full": 0.7191880341880342,
-      "hybrid_without_history": 0.7183547008547009,
-      "hybrid_without_metadata": 0.2912179487179487,
-      "lexical_with_filter": 0.28816239316239317,
-      "lexical_word": 0.17166666666666666,
-      "lexical_word_char": 0.28816239316239317
+  "independent_gate": {
+    "audit4": {
+      "baseline": 0.7667916666666668,
+      "baseline_oracle": 0.8519861111111112,
+      "cluster_bootstrap_95_ci": [
+        0.027704117421987924,
+        0.0743334458148423
+      ],
+      "clusters": 462,
+      "delta": 0.05073611111111111,
+      "enhanced": 0.8175277777777777,
+      "enhanced_oracle": 0.9062638888888889,
+      "losses": 14,
+      "minimum_guarded_slice": {
+        "delta": 0.01824561403508772,
+        "name": "query_one_token",
+        "queries": 95
+      },
+      "sample": "standard-v1",
+      "ties": 537,
+      "unit_sha256": "f0ba6a8db9c9cd71a411e0372215c355aa6443c1aac3813d9818c784e5bc86a2",
+      "units": 600,
+      "wins": 49
     },
-    "error_slices": {
-      "category_global": {
-        "queries": 0,
-        "recall_at_50": 0.0
+    "confirm_fresh3": {
+      "baseline": 0.7285,
+      "baseline_oracle": 0.8269722222222221,
+      "cluster_bootstrap_95_ci": [
+        0.03177645590682197,
+        0.08250585582184639
+      ],
+      "clusters": 533,
+      "delta": 0.05677777777777778,
+      "enhanced": 0.7852777777777777,
+      "enhanced_oracle": 0.8969444444444444,
+      "losses": 16,
+      "minimum_guarded_slice": {
+        "delta": 0.011261261261261262,
+        "name": "relevant_has_cross_location",
+        "queries": 148
       },
-      "category_scoped": {
-        "queries": 600,
-        "recall_at_50": 0.7191880341880342
-      },
-      "filter_empty": {
-        "queries": 207,
-        "recall_at_50": 0.7246376811594203
-      },
-      "filter_present": {
-        "queries": 393,
-        "recall_at_50": 0.7163176094473805
-      },
-      "location_common": {
-        "queries": 594,
-        "recall_at_50": 0.721402054735388
-      },
-      "location_rare": {
-        "queries": 6,
-        "recall_at_50": 0.5
-      },
-      "query_multi_token": {
-        "queries": 531,
-        "recall_at_50": 0.7190834902699309
-      },
-      "query_one_token": {
-        "queries": 69,
-        "recall_at_50": 0.7199925678186548
-      },
-      "relevant_all_history_seen": {
-        "queries": 177,
-        "recall_at_50": 0.711864406779661
-      },
-      "relevant_has_unseen": {
-        "queries": 423,
-        "recall_at_50": 0.7222525307631692
-      }
+      "sample": "fresh-text-v2",
+      "ties": 531,
+      "unit_sha256": "3d39a4c894607d6a434a298858423521317f53b5579eeaa78491e7a3523c77bc",
+      "units": 600,
+      "wins": 53
     },
-    "fit_and_retrieval_seconds": 102.73722220794298,
-    "queries": 600
+    "gate": {
+      "all_per_fold_n_ge_50_slices_at_least_minus_0_02": true,
+      "both_folds_positive": true,
+      "pass": true,
+      "pooled_cluster_ci_lower_above_zero": true,
+      "pooled_delta_at_least_0_005": true
+    },
+    "method": {
+      "bootstrap": "stratified cluster percentile bootstrap",
+      "cluster_key": "normalize_text(search_query)",
+      "fold_draw": "Resample n_clusters whole text clusters with replacement; delta=sum(cluster delta sums)/sum(cluster unit counts).",
+      "fold_seeds": {
+        "audit4": 2026092704,
+        "confirm_fresh3": 2026092703
+      },
+      "metric": "macro Recall@50 over query units",
+      "point_estimate_weighting": "equal weight per query unit",
+      "pooled_draw": "Resample separately within each fold, then pool delta sums and unit counts.",
+      "pooled_seed": 2026092799,
+      "quantiles": [
+        0.025,
+        0.975
+      ],
+      "samples": 10000,
+      "slice_gate": "Every per-fold slice with n>=50 must have point delta>=-0.02."
+    },
+    "pooled_confirm_audit": {
+      "baseline": 0.7476458333333333,
+      "cluster_bootstrap_95_ci": [
+        0.03685976817332543,
+        0.07106407696264717
+      ],
+      "clusters": 995,
+      "delta": 0.05375694444444444,
+      "enhanced": 0.8014027777777777,
+      "losses": 30,
+      "minimum_reported_slice": {
+        "delta": 0.01971326164874552,
+        "name": "relevant_has_cross_location",
+        "queries": 279
+      },
+      "ties": 1068,
+      "units": 1200,
+      "wins": 102
+    }
+  },
+  "model_overrides": {
+    "max_geo_neighbors": 5,
+    "microcat_neighbors": 16
   },
   "protocol": {
-    "confirm_fold": 1,
-    "evaluation_catalog": "benchmark items union all deduplicated train items",
-    "history_excludes_entire_heldout_text_group": true,
-    "metric": "macro Recall@50 over aggregated full search tuples",
-    "split": "sha256(normalized search_query) modulo fold_modulo",
-    "tune_fold": 0,
-    "tune_history_also_excludes_confirm_fold": true
+    "catalog": "benchmark items union all deduplicated train items",
+    "exclusions": {
+      "audit": [
+        4
+      ],
+      "confirm": [
+        3,
+        4
+      ],
+      "tune": [
+        2,
+        3,
+        4
+      ]
+    },
+    "folds": {
+      "audit": 4,
+      "confirm": 3,
+      "tune": 2
+    },
+    "queries_per_fold": 600,
+    "sampling": {
+      "audit": "standard-v1",
+      "confirm": "fresh-text-v2",
+      "tune": "standard-v1"
+    },
+    "selection_uses_only_tune": true
   },
-  "selected_weights": {
-    "category": 0.05,
-    "char": 0.55,
-    "filter": 0.0,
-    "history": 0.25,
-    "location": 0.7,
-    "popularity": 0.03,
-    "word": 1.0
+  "selected_settings": {
+    "exact_rescore": true,
+    "geo_neighbors": 3,
+    "pool": 300,
+    "weights": {
+      "category": 0.05,
+      "char": 0.35,
+      "filter": 0.0,
+      "history": 0.0,
+      "location": 0.7,
+      "microcat": 0.4,
+      "popularity": 0.03,
+      "title": 0.0,
+      "word": 1.0
+    }
   },
-  "tune": {
-    "best_recall_at_50": 0.7619625800612643,
-    "fit_and_retrieval_seconds": 516.1762292080093,
-    "queries": 600,
-    "trials": [
-      {
-        "recall_at_50": 0.7619625800612643,
-        "weights": {
-          "category": 0.05,
-          "char": 0.55,
-          "filter": 0.0,
-          "history": 0.25,
-          "location": 0.7,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.7619625800612643,
-        "weights": {
-          "category": 0.05,
-          "char": 0.55,
-          "filter": 0.18,
-          "history": 0.25,
-          "location": 0.7,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.7619625800612643,
-        "weights": {
-          "category": 0.14,
-          "char": 0.55,
-          "filter": 0.0,
-          "history": 0.25,
-          "location": 0.7,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.7619625800612643,
-        "weights": {
-          "category": 0.14,
-          "char": 0.55,
-          "filter": 0.18,
-          "history": 0.25,
-          "location": 0.7,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.7599625800612643,
-        "weights": {
-          "category": 0.05,
-          "char": 0.55,
-          "filter": 0.0,
-          "history": 0.0,
-          "location": 0.7,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.7599625800612643,
-        "weights": {
-          "category": 0.05,
-          "char": 0.55,
-          "filter": 0.18,
-          "history": 0.0,
-          "location": 0.7,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.7599625800612643,
-        "weights": {
-          "category": 0.14,
-          "char": 0.55,
-          "filter": 0.0,
-          "history": 0.0,
-          "location": 0.7,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.7599625800612643,
-        "weights": {
-          "category": 0.14,
-          "char": 0.55,
-          "filter": 0.18,
-          "history": 0.0,
-          "location": 0.7,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.7588375800612643,
-        "weights": {
-          "category": 0.05,
-          "char": 0.55,
-          "filter": 0.0,
-          "history": 0.6,
-          "location": 0.7,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.7588375800612643,
-        "weights": {
-          "category": 0.14,
-          "char": 0.55,
-          "filter": 0.0,
-          "history": 0.6,
-          "location": 0.7,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.7587498607630186,
-        "weights": {
-          "category": 0.05,
-          "char": 0.55,
-          "filter": 0.18,
-          "history": 0.6,
-          "location": 0.7,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.7587498607630186,
-        "weights": {
-          "category": 0.14,
-          "char": 0.55,
-          "filter": 0.18,
-          "history": 0.6,
-          "location": 0.7,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.7473092706513759,
-        "weights": {
-          "category": 0.05,
-          "char": 0.55,
-          "filter": 0.0,
-          "history": 0.95,
-          "location": 0.7,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.7473092706513759,
-        "weights": {
-          "category": 0.05,
-          "char": 0.55,
-          "filter": 0.18,
-          "history": 0.95,
-          "location": 0.7,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.7473092706513759,
-        "weights": {
-          "category": 0.14,
-          "char": 0.55,
-          "filter": 0.0,
-          "history": 0.95,
-          "location": 0.7,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.7473092706513759,
-        "weights": {
-          "category": 0.14,
-          "char": 0.55,
-          "filter": 0.18,
-          "history": 0.95,
-          "location": 0.7,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.7099747981063771,
-        "weights": {
-          "category": 0.05,
-          "char": 0.8,
-          "filter": 0.18,
-          "history": 0.25,
-          "location": 0.7,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.7099747981063771,
-        "weights": {
-          "category": 0.14,
-          "char": 0.8,
-          "filter": 0.18,
-          "history": 0.25,
-          "location": 0.7,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.7096414647730437,
-        "weights": {
-          "category": 0.05,
-          "char": 0.8,
-          "filter": 0.18,
-          "history": 0.0,
-          "location": 0.7,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.7096414647730437,
-        "weights": {
-          "category": 0.14,
-          "char": 0.8,
-          "filter": 0.18,
-          "history": 0.0,
-          "location": 0.7,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.709349798106377,
-        "weights": {
-          "category": 0.05,
-          "char": 0.8,
-          "filter": 0.18,
-          "history": 0.6,
-          "location": 0.7,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.709349798106377,
-        "weights": {
-          "category": 0.14,
-          "char": 0.8,
-          "filter": 0.18,
-          "history": 0.6,
-          "location": 0.7,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.7083081314397104,
-        "weights": {
-          "category": 0.05,
-          "char": 0.8,
-          "filter": 0.0,
-          "history": 0.25,
-          "location": 0.7,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.7083081314397104,
-        "weights": {
-          "category": 0.14,
-          "char": 0.8,
-          "filter": 0.0,
-          "history": 0.25,
-          "location": 0.7,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.707974798106377,
-        "weights": {
-          "category": 0.05,
-          "char": 0.8,
-          "filter": 0.0,
-          "history": 0.0,
-          "location": 0.7,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.707974798106377,
-        "weights": {
-          "category": 0.14,
-          "char": 0.8,
-          "filter": 0.0,
-          "history": 0.0,
-          "location": 0.7,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.7076831314397104,
-        "weights": {
-          "category": 0.05,
-          "char": 0.8,
-          "filter": 0.0,
-          "history": 0.6,
-          "location": 0.7,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.7076831314397104,
-        "weights": {
-          "category": 0.14,
-          "char": 0.8,
-          "filter": 0.0,
-          "history": 0.6,
-          "location": 0.7,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.6991646129211918,
-        "weights": {
-          "category": 0.05,
-          "char": 0.8,
-          "filter": 0.18,
-          "history": 0.95,
-          "location": 0.7,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.6991646129211918,
-        "weights": {
-          "category": 0.14,
-          "char": 0.8,
-          "filter": 0.18,
-          "history": 0.95,
-          "location": 0.7,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.6974979462545251,
-        "weights": {
-          "category": 0.05,
-          "char": 0.8,
-          "filter": 0.0,
-          "history": 0.95,
-          "location": 0.7,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.6974979462545251,
-        "weights": {
-          "category": 0.14,
-          "char": 0.8,
-          "filter": 0.0,
-          "history": 0.95,
-          "location": 0.7,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.6663405388471177,
-        "weights": {
-          "category": 0.05,
-          "char": 1.05,
-          "filter": 0.0,
-          "history": 0.95,
-          "location": 0.7,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.6663405388471177,
-        "weights": {
-          "category": 0.14,
-          "char": 1.05,
-          "filter": 0.0,
-          "history": 0.95,
-          "location": 0.7,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.6661553536619326,
-        "weights": {
-          "category": 0.05,
-          "char": 1.05,
-          "filter": 0.18,
-          "history": 0.95,
-          "location": 0.7,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.6661553536619326,
-        "weights": {
-          "category": 0.14,
-          "char": 1.05,
-          "filter": 0.18,
-          "history": 0.95,
-          "location": 0.7,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.6659840573656362,
-        "weights": {
-          "category": 0.05,
-          "char": 1.05,
-          "filter": 0.0,
-          "history": 0.0,
-          "location": 0.7,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.6659840573656362,
-        "weights": {
-          "category": 0.14,
-          "char": 1.05,
-          "filter": 0.0,
-          "history": 0.0,
-          "location": 0.7,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.6657988721804511,
-        "weights": {
-          "category": 0.05,
-          "char": 1.05,
-          "filter": 0.18,
-          "history": 0.0,
-          "location": 0.7,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.6657988721804511,
-        "weights": {
-          "category": 0.14,
-          "char": 1.05,
-          "filter": 0.18,
-          "history": 0.0,
-          "location": 0.7,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.664650724032303,
-        "weights": {
-          "category": 0.05,
-          "char": 1.05,
-          "filter": 0.0,
-          "history": 0.6,
-          "location": 0.7,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.664650724032303,
-        "weights": {
-          "category": 0.14,
-          "char": 1.05,
-          "filter": 0.0,
-          "history": 0.6,
-          "location": 0.7,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.6644655388471178,
-        "weights": {
-          "category": 0.05,
-          "char": 1.05,
-          "filter": 0.18,
-          "history": 0.6,
-          "location": 0.7,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.6644655388471178,
-        "weights": {
-          "category": 0.14,
-          "char": 1.05,
-          "filter": 0.18,
-          "history": 0.6,
-          "location": 0.7,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.6643173906989696,
-        "weights": {
-          "category": 0.05,
-          "char": 1.05,
-          "filter": 0.0,
-          "history": 0.25,
-          "location": 0.7,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.6643173906989696,
-        "weights": {
-          "category": 0.14,
-          "char": 1.05,
-          "filter": 0.0,
-          "history": 0.25,
-          "location": 0.7,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.6641322055137844,
-        "weights": {
-          "category": 0.05,
-          "char": 1.05,
-          "filter": 0.18,
-          "history": 0.25,
-          "location": 0.7,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.6641322055137844,
-        "weights": {
-          "category": 0.14,
-          "char": 1.05,
-          "filter": 0.18,
-          "history": 0.25,
-          "location": 0.7,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.6051163324979114,
-        "weights": {
-          "category": 0.05,
-          "char": 0.55,
-          "filter": 0.0,
-          "history": 0.0,
-          "location": 0.3,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.6051163324979114,
-        "weights": {
-          "category": 0.14,
-          "char": 0.55,
-          "filter": 0.0,
-          "history": 0.0,
-          "location": 0.3,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.6033107769423558,
-        "weights": {
-          "category": 0.05,
-          "char": 0.55,
-          "filter": 0.18,
-          "history": 0.0,
-          "location": 0.3,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.6033107769423558,
-        "weights": {
-          "category": 0.14,
-          "char": 0.55,
-          "filter": 0.18,
-          "history": 0.0,
-          "location": 0.3,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.6024774436090226,
-        "weights": {
-          "category": 0.05,
-          "char": 0.55,
-          "filter": 0.18,
-          "history": 0.25,
-          "location": 0.3,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.6024774436090226,
-        "weights": {
-          "category": 0.14,
-          "char": 0.55,
-          "filter": 0.18,
-          "history": 0.25,
-          "location": 0.3,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.6021996658312448,
-        "weights": {
-          "category": 0.05,
-          "char": 0.55,
-          "filter": 0.0,
-          "history": 0.25,
-          "location": 0.3,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.6021996658312448,
-        "weights": {
-          "category": 0.14,
-          "char": 0.55,
-          "filter": 0.0,
-          "history": 0.25,
-          "location": 0.3,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.5915144806460595,
-        "weights": {
-          "category": 0.05,
-          "char": 0.55,
-          "filter": 0.18,
-          "history": 0.6,
-          "location": 0.3,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.5915144806460595,
-        "weights": {
-          "category": 0.14,
-          "char": 0.55,
-          "filter": 0.18,
-          "history": 0.6,
-          "location": 0.3,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.5912367028682818,
-        "weights": {
-          "category": 0.05,
-          "char": 0.55,
-          "filter": 0.0,
-          "history": 0.6,
-          "location": 0.3,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.5912367028682818,
-        "weights": {
-          "category": 0.14,
-          "char": 0.55,
-          "filter": 0.0,
-          "history": 0.6,
-          "location": 0.3,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.5562269119769119,
-        "weights": {
-          "category": 0.05,
-          "char": 0.55,
-          "filter": 0.18,
-          "history": 0.95,
-          "location": 0.3,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.5562269119769119,
-        "weights": {
-          "category": 0.14,
-          "char": 0.55,
-          "filter": 0.18,
-          "history": 0.95,
-          "location": 0.3,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.5559491341991342,
-        "weights": {
-          "category": 0.05,
-          "char": 0.55,
-          "filter": 0.0,
-          "history": 0.95,
-          "location": 0.3,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.5559491341991342,
-        "weights": {
-          "category": 0.14,
-          "char": 0.55,
-          "filter": 0.0,
-          "history": 0.95,
-          "location": 0.3,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.537650724032303,
-        "weights": {
-          "category": 0.05,
-          "char": 0.8,
-          "filter": 0.0,
-          "history": 0.0,
-          "location": 0.3,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.537650724032303,
-        "weights": {
-          "category": 0.05,
-          "char": 0.8,
-          "filter": 0.18,
-          "history": 0.0,
-          "location": 0.3,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.537650724032303,
-        "weights": {
-          "category": 0.14,
-          "char": 0.8,
-          "filter": 0.0,
-          "history": 0.0,
-          "location": 0.3,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.537650724032303,
-        "weights": {
-          "category": 0.14,
-          "char": 0.8,
-          "filter": 0.18,
-          "history": 0.0,
-          "location": 0.3,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.5354285018100807,
-        "weights": {
-          "category": 0.05,
-          "char": 0.8,
-          "filter": 0.0,
-          "history": 0.25,
-          "location": 0.3,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.5354285018100807,
-        "weights": {
-          "category": 0.05,
-          "char": 0.8,
-          "filter": 0.18,
-          "history": 0.25,
-          "location": 0.3,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.5354285018100807,
-        "weights": {
-          "category": 0.14,
-          "char": 0.8,
-          "filter": 0.0,
-          "history": 0.25,
-          "location": 0.3,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.5354285018100807,
-        "weights": {
-          "category": 0.14,
-          "char": 0.8,
-          "filter": 0.18,
-          "history": 0.25,
-          "location": 0.3,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.5293173906989697,
-        "weights": {
-          "category": 0.05,
-          "char": 0.8,
-          "filter": 0.0,
-          "history": 0.6,
-          "location": 0.3,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.5293173906989697,
-        "weights": {
-          "category": 0.14,
-          "char": 0.8,
-          "filter": 0.0,
-          "history": 0.6,
-          "location": 0.3,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.527650724032303,
-        "weights": {
-          "category": 0.05,
-          "char": 0.8,
-          "filter": 0.18,
-          "history": 0.6,
-          "location": 0.3,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.527650724032303,
-        "weights": {
-          "category": 0.14,
-          "char": 0.8,
-          "filter": 0.18,
-          "history": 0.6,
-          "location": 0.3,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.503423872180451,
-        "weights": {
-          "category": 0.05,
-          "char": 0.8,
-          "filter": 0.0,
-          "history": 0.95,
-          "location": 0.3,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.503423872180451,
-        "weights": {
-          "category": 0.14,
-          "char": 0.8,
-          "filter": 0.0,
-          "history": 0.95,
-          "location": 0.3,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.5017572055137843,
-        "weights": {
-          "category": 0.05,
-          "char": 0.8,
-          "filter": 0.18,
-          "history": 0.95,
-          "location": 0.3,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.5017572055137843,
-        "weights": {
-          "category": 0.14,
-          "char": 0.8,
-          "filter": 0.18,
-          "history": 0.95,
-          "location": 0.3,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.4739655388471178,
-        "weights": {
-          "category": 0.05,
-          "char": 1.05,
-          "filter": 0.0,
-          "history": 0.0,
-          "location": 0.3,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.4739655388471178,
-        "weights": {
-          "category": 0.05,
-          "char": 1.05,
-          "filter": 0.18,
-          "history": 0.0,
-          "location": 0.3,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.4739655388471178,
-        "weights": {
-          "category": 0.14,
-          "char": 1.05,
-          "filter": 0.0,
-          "history": 0.0,
-          "location": 0.3,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.4739655388471178,
-        "weights": {
-          "category": 0.14,
-          "char": 1.05,
-          "filter": 0.18,
-          "history": 0.0,
-          "location": 0.3,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.4714655388471178,
-        "weights": {
-          "category": 0.14,
-          "char": 1.05,
-          "filter": 0.0,
-          "history": 0.25,
-          "location": 0.3,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.4714655388471178,
-        "weights": {
-          "category": 0.14,
-          "char": 1.05,
-          "filter": 0.18,
-          "history": 0.25,
-          "location": 0.3,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.47063220551378443,
-        "weights": {
-          "category": 0.05,
-          "char": 1.05,
-          "filter": 0.0,
-          "history": 0.25,
-          "location": 0.3,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.47063220551378443,
-        "weights": {
-          "category": 0.05,
-          "char": 1.05,
-          "filter": 0.18,
-          "history": 0.25,
-          "location": 0.3,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.4652155388471178,
-        "weights": {
-          "category": 0.05,
-          "char": 1.05,
-          "filter": 0.0,
-          "history": 0.6,
-          "location": 0.3,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.4652155388471178,
-        "weights": {
-          "category": 0.05,
-          "char": 1.05,
-          "filter": 0.18,
-          "history": 0.6,
-          "location": 0.3,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.4652155388471178,
-        "weights": {
-          "category": 0.14,
-          "char": 1.05,
-          "filter": 0.0,
-          "history": 0.6,
-          "location": 0.3,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.4652155388471178,
-        "weights": {
-          "category": 0.14,
-          "char": 1.05,
-          "filter": 0.18,
-          "history": 0.6,
-          "location": 0.3,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.45715998329156227,
-        "weights": {
-          "category": 0.05,
-          "char": 1.05,
-          "filter": 0.0,
-          "history": 0.95,
-          "location": 0.3,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.45715998329156227,
-        "weights": {
-          "category": 0.05,
-          "char": 1.05,
-          "filter": 0.18,
-          "history": 0.95,
-          "location": 0.3,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.45715998329156227,
-        "weights": {
-          "category": 0.14,
-          "char": 1.05,
-          "filter": 0.0,
-          "history": 0.95,
-          "location": 0.3,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.45715998329156227,
-        "weights": {
-          "category": 0.14,
-          "char": 1.05,
-          "filter": 0.18,
-          "history": 0.95,
-          "location": 0.3,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.42176117376775274,
-        "weights": {
-          "category": 0.05,
-          "char": 0.55,
-          "filter": 0.0,
-          "history": 0.0,
-          "location": 0.1,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.42176117376775274,
-        "weights": {
-          "category": 0.14,
-          "char": 0.55,
-          "filter": 0.0,
-          "history": 0.0,
-          "location": 0.1,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.42009450710108603,
-        "weights": {
-          "category": 0.05,
-          "char": 0.55,
-          "filter": 0.18,
-          "history": 0.0,
-          "location": 0.1,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.42009450710108603,
-        "weights": {
-          "category": 0.14,
-          "char": 0.55,
-          "filter": 0.18,
-          "history": 0.0,
-          "location": 0.1,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.4145389515455305,
-        "weights": {
-          "category": 0.05,
-          "char": 0.55,
-          "filter": 0.0,
-          "history": 0.25,
-          "location": 0.1,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.4145389515455305,
-        "weights": {
-          "category": 0.14,
-          "char": 0.55,
-          "filter": 0.0,
-          "history": 0.25,
-          "location": 0.1,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.4128722848788638,
-        "weights": {
-          "category": 0.05,
-          "char": 0.55,
-          "filter": 0.18,
-          "history": 0.25,
-          "location": 0.1,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.4128722848788638,
-        "weights": {
-          "category": 0.14,
-          "char": 0.55,
-          "filter": 0.18,
-          "history": 0.25,
-          "location": 0.1,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.39361302561960454,
-        "weights": {
-          "category": 0.05,
-          "char": 0.55,
-          "filter": 0.0,
-          "history": 0.6,
-          "location": 0.1,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.39361302561960454,
-        "weights": {
-          "category": 0.14,
-          "char": 0.55,
-          "filter": 0.0,
-          "history": 0.6,
-          "location": 0.1,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.39111302561960454,
-        "weights": {
-          "category": 0.05,
-          "char": 0.55,
-          "filter": 0.18,
-          "history": 0.6,
-          "location": 0.1,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.39111302561960454,
-        "weights": {
-          "category": 0.14,
-          "char": 0.55,
-          "filter": 0.18,
-          "history": 0.6,
-          "location": 0.1,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.3649542954608744,
-        "weights": {
-          "category": 0.05,
-          "char": 0.8,
-          "filter": 0.0,
-          "history": 0.0,
-          "location": 0.1,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.3649542954608744,
-        "weights": {
-          "category": 0.05,
-          "char": 0.8,
-          "filter": 0.0,
-          "history": 0.25,
-          "location": 0.1,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.3649542954608744,
-        "weights": {
-          "category": 0.14,
-          "char": 0.8,
-          "filter": 0.0,
-          "history": 0.0,
-          "location": 0.1,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.3649542954608744,
-        "weights": {
-          "category": 0.14,
-          "char": 0.8,
-          "filter": 0.0,
-          "history": 0.25,
-          "location": 0.1,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.3606685811751601,
-        "weights": {
-          "category": 0.05,
-          "char": 0.8,
-          "filter": 0.18,
-          "history": 0.0,
-          "location": 0.1,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.3606685811751601,
-        "weights": {
-          "category": 0.05,
-          "char": 0.8,
-          "filter": 0.18,
-          "history": 0.25,
-          "location": 0.1,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.3606685811751601,
-        "weights": {
-          "category": 0.14,
-          "char": 0.8,
-          "filter": 0.18,
-          "history": 0.0,
-          "location": 0.1,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.3606685811751601,
-        "weights": {
-          "category": 0.14,
-          "char": 0.8,
-          "filter": 0.18,
-          "history": 0.25,
-          "location": 0.1,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.3507876287942077,
-        "weights": {
-          "category": 0.05,
-          "char": 0.8,
-          "filter": 0.0,
-          "history": 0.6,
-          "location": 0.1,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.3507876287942077,
-        "weights": {
-          "category": 0.14,
-          "char": 0.8,
-          "filter": 0.0,
-          "history": 0.6,
-          "location": 0.1,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.34900191450849344,
-        "weights": {
-          "category": 0.05,
-          "char": 0.8,
-          "filter": 0.18,
-          "history": 0.6,
-          "location": 0.1,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.34900191450849344,
-        "weights": {
-          "category": 0.14,
-          "char": 0.8,
-          "filter": 0.18,
-          "history": 0.6,
-          "location": 0.1,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.32979569504569506,
-        "weights": {
-          "category": 0.05,
-          "char": 0.55,
-          "filter": 0.0,
-          "history": 0.95,
-          "location": 0.1,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.32979569504569506,
-        "weights": {
-          "category": 0.14,
-          "char": 0.55,
-          "filter": 0.0,
-          "history": 0.95,
-          "location": 0.1,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.32690270815928707,
-        "weights": {
-          "category": 0.05,
-          "char": 0.55,
-          "filter": 0.0,
-          "history": 0.0,
-          "location": 0.02,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.32690270815928707,
-        "weights": {
-          "category": 0.14,
-          "char": 0.55,
-          "filter": 0.0,
-          "history": 0.0,
-          "location": 0.02,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.3252360414926204,
-        "weights": {
-          "category": 0.05,
-          "char": 0.55,
-          "filter": 0.18,
-          "history": 0.0,
-          "location": 0.02,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.3252360414926204,
-        "weights": {
-          "category": 0.14,
-          "char": 0.55,
-          "filter": 0.18,
-          "history": 0.0,
-          "location": 0.02,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.32479569504569505,
-        "weights": {
-          "category": 0.05,
-          "char": 0.55,
-          "filter": 0.18,
-          "history": 0.95,
-          "location": 0.1,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.32479569504569505,
-        "weights": {
-          "category": 0.14,
-          "char": 0.55,
-          "filter": 0.18,
-          "history": 0.95,
-          "location": 0.1,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.32356937482595377,
-        "weights": {
-          "category": 0.05,
-          "char": 0.55,
-          "filter": 0.0,
-          "history": 0.25,
-          "location": 0.02,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.32356937482595377,
-        "weights": {
-          "category": 0.14,
-          "char": 0.55,
-          "filter": 0.0,
-          "history": 0.25,
-          "location": 0.02,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.3202360414926204,
-        "weights": {
-          "category": 0.05,
-          "char": 0.55,
-          "filter": 0.18,
-          "history": 0.25,
-          "location": 0.02,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.3202360414926204,
-        "weights": {
-          "category": 0.14,
-          "char": 0.55,
-          "filter": 0.18,
-          "history": 0.25,
-          "location": 0.02,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.3140607769423559,
-        "weights": {
-          "category": 0.05,
-          "char": 1.05,
-          "filter": 0.0,
-          "history": 0.0,
-          "location": 0.1,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.3140607769423559,
-        "weights": {
-          "category": 0.14,
-          "char": 1.05,
-          "filter": 0.0,
-          "history": 0.0,
-          "location": 0.1,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.3134285714285714,
-        "weights": {
-          "category": 0.05,
-          "char": 0.8,
-          "filter": 0.0,
-          "history": 0.95,
-          "location": 0.1,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.3134285714285714,
-        "weights": {
-          "category": 0.14,
-          "char": 0.8,
-          "filter": 0.0,
-          "history": 0.95,
-          "location": 0.1,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.3107274436090226,
-        "weights": {
-          "category": 0.05,
-          "char": 1.05,
-          "filter": 0.18,
-          "history": 0.0,
-          "location": 0.1,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.3107274436090226,
-        "weights": {
-          "category": 0.14,
-          "char": 1.05,
-          "filter": 0.18,
-          "history": 0.0,
-          "location": 0.1,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.31009523809523815,
-        "weights": {
-          "category": 0.05,
-          "char": 0.8,
-          "filter": 0.18,
-          "history": 0.95,
-          "location": 0.1,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.31009523809523815,
-        "weights": {
-          "category": 0.14,
-          "char": 0.8,
-          "filter": 0.18,
-          "history": 0.95,
-          "location": 0.1,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.3065607769423559,
-        "weights": {
-          "category": 0.05,
-          "char": 1.05,
-          "filter": 0.0,
-          "history": 0.25,
-          "location": 0.1,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.3065607769423559,
-        "weights": {
-          "category": 0.14,
-          "char": 1.05,
-          "filter": 0.0,
-          "history": 0.25,
-          "location": 0.1,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.30600522138680036,
-        "weights": {
-          "category": 0.05,
-          "char": 1.05,
-          "filter": 0.0,
-          "history": 0.6,
-          "location": 0.1,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.30600522138680036,
-        "weights": {
-          "category": 0.14,
-          "char": 1.05,
-          "filter": 0.0,
-          "history": 0.6,
-          "location": 0.1,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.3032274436090226,
-        "weights": {
-          "category": 0.05,
-          "char": 1.05,
-          "filter": 0.18,
-          "history": 0.25,
-          "location": 0.1,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.3032274436090226,
-        "weights": {
-          "category": 0.14,
-          "char": 1.05,
-          "filter": 0.18,
-          "history": 0.25,
-          "location": 0.1,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.30100522138680036,
-        "weights": {
-          "category": 0.05,
-          "char": 1.05,
-          "filter": 0.18,
-          "history": 0.6,
-          "location": 0.1,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.30100522138680036,
-        "weights": {
-          "category": 0.14,
-          "char": 1.05,
-          "filter": 0.18,
-          "history": 0.6,
-          "location": 0.1,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.29700992063492065,
-        "weights": {
-          "category": 0.05,
-          "char": 0.55,
-          "filter": 0.0,
-          "history": 0.6,
-          "location": 0.02,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.29700992063492065,
-        "weights": {
-          "category": 0.14,
-          "char": 0.55,
-          "filter": 0.0,
-          "history": 0.6,
-          "location": 0.02,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.292843253968254,
-        "weights": {
-          "category": 0.05,
-          "char": 0.55,
-          "filter": 0.18,
-          "history": 0.6,
-          "location": 0.02,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.292843253968254,
-        "weights": {
-          "category": 0.14,
-          "char": 0.55,
-          "filter": 0.18,
-          "history": 0.6,
-          "location": 0.02,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.2874867028682818,
-        "weights": {
-          "category": 0.05,
-          "char": 1.05,
-          "filter": 0.0,
-          "history": 0.95,
-          "location": 0.1,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.2874867028682818,
-        "weights": {
-          "category": 0.14,
-          "char": 1.05,
-          "filter": 0.0,
-          "history": 0.95,
-          "location": 0.1,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.28582003620161517,
-        "weights": {
-          "category": 0.05,
-          "char": 1.05,
-          "filter": 0.18,
-          "history": 0.95,
-          "location": 0.1,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.28582003620161517,
-        "weights": {
-          "category": 0.14,
-          "char": 1.05,
-          "filter": 0.18,
-          "history": 0.95,
-          "location": 0.1,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.2775462266778056,
-        "weights": {
-          "category": 0.14,
-          "char": 0.8,
-          "filter": 0.0,
-          "history": 0.0,
-          "location": 0.02,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.27587956001113895,
-        "weights": {
-          "category": 0.05,
-          "char": 0.8,
-          "filter": 0.0,
-          "history": 0.0,
-          "location": 0.02,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.27587956001113895,
-        "weights": {
-          "category": 0.14,
-          "char": 0.8,
-          "filter": 0.18,
-          "history": 0.0,
-          "location": 0.02,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.2742128933444723,
-        "weights": {
-          "category": 0.05,
-          "char": 0.8,
-          "filter": 0.18,
-          "history": 0.0,
-          "location": 0.02,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.2731017822333612,
-        "weights": {
-          "category": 0.05,
-          "char": 0.8,
-          "filter": 0.0,
-          "history": 0.25,
-          "location": 0.02,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.2731017822333612,
-        "weights": {
-          "category": 0.14,
-          "char": 0.8,
-          "filter": 0.0,
-          "history": 0.25,
-          "location": 0.02,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.26986104149262047,
-        "weights": {
-          "category": 0.05,
-          "char": 0.8,
-          "filter": 0.0,
-          "history": 0.6,
-          "location": 0.02,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.26986104149262047,
-        "weights": {
-          "category": 0.14,
-          "char": 0.8,
-          "filter": 0.0,
-          "history": 0.6,
-          "location": 0.02,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.2697684489000279,
-        "weights": {
-          "category": 0.05,
-          "char": 0.8,
-          "filter": 0.18,
-          "history": 0.25,
-          "location": 0.02,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.2697684489000279,
-        "weights": {
-          "category": 0.14,
-          "char": 0.8,
-          "filter": 0.18,
-          "history": 0.25,
-          "location": 0.02,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.26486104149262046,
-        "weights": {
-          "category": 0.05,
-          "char": 0.8,
-          "filter": 0.18,
-          "history": 0.6,
-          "location": 0.02,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.26486104149262046,
-        "weights": {
-          "category": 0.14,
-          "char": 0.8,
-          "filter": 0.18,
-          "history": 0.6,
-          "location": 0.02,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.24111104149262047,
-        "weights": {
-          "category": 0.05,
-          "char": 1.05,
-          "filter": 0.0,
-          "history": 0.0,
-          "location": 0.02,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.24111104149262047,
-        "weights": {
-          "category": 0.14,
-          "char": 1.05,
-          "filter": 0.0,
-          "history": 0.0,
-          "location": 0.02,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.24083326371484268,
-        "weights": {
-          "category": 0.05,
-          "char": 1.05,
-          "filter": 0.0,
-          "history": 0.25,
-          "location": 0.02,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.24083326371484268,
-        "weights": {
-          "category": 0.14,
-          "char": 1.05,
-          "filter": 0.0,
-          "history": 0.25,
-          "location": 0.02,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.23990343915343915,
-        "weights": {
-          "category": 0.05,
-          "char": 0.55,
-          "filter": 0.0,
-          "history": 0.95,
-          "location": 0.02,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.23990343915343915,
-        "weights": {
-          "category": 0.05,
-          "char": 0.55,
-          "filter": 0.18,
-          "history": 0.95,
-          "location": 0.02,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.23990343915343915,
-        "weights": {
-          "category": 0.14,
-          "char": 0.55,
-          "filter": 0.0,
-          "history": 0.95,
-          "location": 0.02,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.23990343915343915,
-        "weights": {
-          "category": 0.14,
-          "char": 0.55,
-          "filter": 0.18,
-          "history": 0.95,
-          "location": 0.02,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.2394443748259538,
-        "weights": {
-          "category": 0.05,
-          "char": 1.05,
-          "filter": 0.18,
-          "history": 0.0,
-          "location": 0.02,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.2394443748259538,
-        "weights": {
-          "category": 0.14,
-          "char": 1.05,
-          "filter": 0.18,
-          "history": 0.0,
-          "location": 0.02,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.23749993038150932,
-        "weights": {
-          "category": 0.05,
-          "char": 1.05,
-          "filter": 0.18,
-          "history": 0.25,
-          "location": 0.02,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.23749993038150932,
-        "weights": {
-          "category": 0.14,
-          "char": 1.05,
-          "filter": 0.18,
-          "history": 0.25,
-          "location": 0.02,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.23536177248677248,
-        "weights": {
-          "category": 0.05,
-          "char": 0.8,
-          "filter": 0.0,
-          "history": 0.95,
-          "location": 0.02,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.23536177248677248,
-        "weights": {
-          "category": 0.05,
-          "char": 0.8,
-          "filter": 0.18,
-          "history": 0.95,
-          "location": 0.02,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.23536177248677248,
-        "weights": {
-          "category": 0.14,
-          "char": 0.8,
-          "filter": 0.0,
-          "history": 0.95,
-          "location": 0.02,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.23536177248677248,
-        "weights": {
-          "category": 0.14,
-          "char": 0.8,
-          "filter": 0.18,
-          "history": 0.95,
-          "location": 0.02,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.23277770815928714,
-        "weights": {
-          "category": 0.05,
-          "char": 1.05,
-          "filter": 0.0,
-          "history": 0.6,
-          "location": 0.02,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.23277770815928714,
-        "weights": {
-          "category": 0.14,
-          "char": 1.05,
-          "filter": 0.0,
-          "history": 0.6,
-          "location": 0.02,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.23111104149262046,
-        "weights": {
-          "category": 0.05,
-          "char": 1.05,
-          "filter": 0.18,
-          "history": 0.6,
-          "location": 0.02,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.23111104149262046,
-        "weights": {
-          "category": 0.14,
-          "char": 1.05,
-          "filter": 0.18,
-          "history": 0.6,
-          "location": 0.02,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.22277770815928713,
-        "weights": {
-          "category": 0.05,
-          "char": 1.05,
-          "filter": 0.0,
-          "history": 0.95,
-          "location": 0.02,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.22277770815928713,
-        "weights": {
-          "category": 0.05,
-          "char": 1.05,
-          "filter": 0.18,
-          "history": 0.95,
-          "location": 0.02,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.22277770815928713,
-        "weights": {
-          "category": 0.14,
-          "char": 1.05,
-          "filter": 0.0,
-          "history": 0.95,
-          "location": 0.02,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      },
-      {
-        "recall_at_50": 0.22277770815928713,
-        "weights": {
-          "category": 0.14,
-          "char": 1.05,
-          "filter": 0.18,
-          "history": 0.95,
-          "location": 0.02,
-          "popularity": 0.03,
-          "word": 1.0
-        }
-      }
-    ]
-  }
+  "selection_guard": {
+    "guarded_slice_baselines": {
+      "filter_empty": 0.7609756097560976,
+      "filter_present": 0.7367510548523206,
+      "relevant_all_exact_location": 0.795360824742268,
+      "relevant_all_history_seen": 0.7016339869281045,
+      "relevant_has_cross_location": 0.5327536231884058,
+      "relevant_has_unseen": 0.7539156626506024
+    },
+    "minimum_delta": -0.02,
+    "minimum_queries": 50,
+    "selected_eligible": true,
+    "selected_minimum_delta": 0.02941176470588236,
+    "selected_recall_at_50": 0.7917222222222222,
+    "selected_slice_deltas": {
+      "filter_empty": 0.04552845528455274,
+      "filter_present": 0.04729957805907181,
+      "relevant_all_exact_location": 0.04814432989690731,
+      "relevant_all_history_seen": 0.02941176470588236,
+      "relevant_has_cross_location": 0.04057971014492756,
+      "relevant_has_unseen": 0.0502342704149934
+    }
+  },
+  "tune_ablations": {
+    "baseline": 0.7450277777777777,
+    "char": 0.7708333333333334,
+    "exact_rescore": 0.7902222222222222,
+    "geo_neighbors": 0.7917222222222222,
+    "history": 0.7882222222222222,
+    "location": 0.7917222222222222,
+    "microcat": 0.7778611111111111,
+    "pool": 0.7684166666666666,
+    "selected": 0.7917222222222222,
+    "title": 0.7917222222222222
+  },
+  "tune_trials": [
+    {
+      "eligible": true,
+      "minimum_guarded_slice_delta": 0.0,
+      "parameter": "exact_rescore",
+      "pass": 1,
+      "recall_at_50": 0.7450277777777777,
+      "value": false
+    },
+    {
+      "eligible": true,
+      "minimum_guarded_slice_delta": -0.005316455696202538,
+      "parameter": "exact_rescore",
+      "pass": 1,
+      "recall_at_50": 0.7445833333333334,
+      "value": true
+    },
+    {
+      "eligible": true,
+      "minimum_guarded_slice_delta": 0.0,
+      "parameter": "pool",
+      "pass": 1,
+      "recall_at_50": 0.7450277777777777,
+      "value": 120
+    },
+    {
+      "eligible": false,
+      "minimum_guarded_slice_delta": -0.02869565217391301,
+      "parameter": "pool",
+      "pass": 1,
+      "recall_at_50": 0.7476666666666666,
+      "value": 240
+    },
+    {
+      "eligible": false,
+      "minimum_guarded_slice_delta": -0.02869565217391301,
+      "parameter": "pool",
+      "pass": 1,
+      "recall_at_50": 0.7478333333333333,
+      "value": 300
+    },
+    {
+      "eligible": true,
+      "minimum_guarded_slice_delta": 0.0,
+      "parameter": "geo_neighbors",
+      "pass": 1,
+      "recall_at_50": 0.7450277777777777,
+      "value": 3
+    },
+    {
+      "eligible": true,
+      "minimum_guarded_slice_delta": -0.01408934707903775,
+      "parameter": "geo_neighbors",
+      "pass": 1,
+      "recall_at_50": 0.7369722222222223,
+      "value": 5
+    },
+    {
+      "eligible": true,
+      "minimum_guarded_slice_delta": -0.0014492753623188692,
+      "parameter": "weight:char",
+      "pass": 1,
+      "recall_at_50": 0.7545277777777778,
+      "value": 0.35
+    },
+    {
+      "eligible": true,
+      "minimum_guarded_slice_delta": 0.0,
+      "parameter": "weight:char",
+      "pass": 1,
+      "recall_at_50": 0.7450277777777777,
+      "value": 0.55
+    },
+    {
+      "eligible": false,
+      "minimum_guarded_slice_delta": -0.0460481099656358,
+      "parameter": "weight:char",
+      "pass": 1,
+      "recall_at_50": 0.7039166666666667,
+      "value": 0.8
+    },
+    {
+      "eligible": true,
+      "minimum_guarded_slice_delta": -0.0014492753623188692,
+      "parameter": "weight:history",
+      "pass": 1,
+      "recall_at_50": 0.758361111111111,
+      "value": 0.0
+    },
+    {
+      "eligible": true,
+      "minimum_guarded_slice_delta": -0.0014492753623188692,
+      "parameter": "weight:history",
+      "pass": 1,
+      "recall_at_50": 0.7545277777777778,
+      "value": 0.25
+    },
+    {
+      "eligible": true,
+      "minimum_guarded_slice_delta": -0.0014492753623188692,
+      "parameter": "weight:location",
+      "pass": 1,
+      "recall_at_50": 0.758361111111111,
+      "value": 0.7
+    },
+    {
+      "eligible": true,
+      "minimum_guarded_slice_delta": -0.018840579710144967,
+      "parameter": "weight:location",
+      "pass": 1,
+      "recall_at_50": 0.7551944444444445,
+      "value": 0.9
+    },
+    {
+      "eligible": false,
+      "minimum_guarded_slice_delta": -0.036231884057971064,
+      "parameter": "weight:location",
+      "pass": 1,
+      "recall_at_50": 0.7518611111111111,
+      "value": 1.2
+    },
+    {
+      "eligible": false,
+      "minimum_guarded_slice_delta": -0.04492753623188411,
+      "parameter": "weight:location",
+      "pass": 1,
+      "recall_at_50": 0.7501944444444445,
+      "value": 1.6
+    },
+    {
+      "eligible": false,
+      "minimum_guarded_slice_delta": -0.036231884057971064,
+      "parameter": "weight:location",
+      "pass": 1,
+      "recall_at_50": 0.7518611111111111,
+      "value": 2.2
+    },
+    {
+      "eligible": true,
+      "minimum_guarded_slice_delta": -0.0014492753623188692,
+      "parameter": "weight:microcat",
+      "pass": 1,
+      "recall_at_50": 0.758361111111111,
+      "value": 0.0
+    },
+    {
+      "eligible": true,
+      "minimum_guarded_slice_delta": 0.009803921568627416,
+      "parameter": "weight:microcat",
+      "pass": 1,
+      "recall_at_50": 0.7614722222222222,
+      "value": 0.15
+    },
+    {
+      "eligible": true,
+      "minimum_guarded_slice_delta": 0.0,
+      "parameter": "weight:microcat",
+      "pass": 1,
+      "recall_at_50": 0.7690833333333333,
+      "value": 0.4
+    },
+    {
+      "eligible": true,
+      "minimum_guarded_slice_delta": 0.0,
+      "parameter": "weight:title",
+      "pass": 1,
+      "recall_at_50": 0.7690833333333333,
+      "value": 0.0
+    },
+    {
+      "eligible": true,
+      "minimum_guarded_slice_delta": -0.009803921568627416,
+      "parameter": "weight:title",
+      "pass": 1,
+      "recall_at_50": 0.7534722222222223,
+      "value": 0.2
+    },
+    {
+      "eligible": false,
+      "minimum_guarded_slice_delta": -0.06372549019607843,
+      "parameter": "weight:title",
+      "pass": 1,
+      "recall_at_50": 0.6979722222222222,
+      "value": 0.5
+    },
+    {
+      "eligible": true,
+      "minimum_guarded_slice_delta": 0.0,
+      "parameter": "exact_rescore",
+      "pass": 2,
+      "recall_at_50": 0.7690833333333333,
+      "value": false
+    },
+    {
+      "eligible": true,
+      "minimum_guarded_slice_delta": 0.0,
+      "parameter": "exact_rescore",
+      "pass": 2,
+      "recall_at_50": 0.7684166666666666,
+      "value": true
+    },
+    {
+      "eligible": true,
+      "minimum_guarded_slice_delta": 0.0,
+      "parameter": "pool",
+      "pass": 2,
+      "recall_at_50": 0.7690833333333333,
+      "value": 120
+    },
+    {
+      "eligible": true,
+      "minimum_guarded_slice_delta": 0.009803921568627416,
+      "parameter": "pool",
+      "pass": 2,
+      "recall_at_50": 0.7827777777777777,
+      "value": 240
+    },
+    {
+      "eligible": true,
+      "minimum_guarded_slice_delta": 0.019607843137254943,
+      "parameter": "pool",
+      "pass": 2,
+      "recall_at_50": 0.7902222222222222,
+      "value": 300
+    },
+    {
+      "eligible": true,
+      "minimum_guarded_slice_delta": 0.019607843137254943,
+      "parameter": "geo_neighbors",
+      "pass": 2,
+      "recall_at_50": 0.7902222222222222,
+      "value": 3
+    },
+    {
+      "eligible": true,
+      "minimum_guarded_slice_delta": 0.009803921568627416,
+      "parameter": "geo_neighbors",
+      "pass": 2,
+      "recall_at_50": 0.7863888888888889,
+      "value": 5
+    },
+    {
+      "eligible": true,
+      "minimum_guarded_slice_delta": 0.019607843137254943,
+      "parameter": "weight:char",
+      "pass": 2,
+      "recall_at_50": 0.7902222222222222,
+      "value": 0.35
+    },
+    {
+      "eligible": true,
+      "minimum_guarded_slice_delta": 0.0,
+      "parameter": "weight:char",
+      "pass": 2,
+      "recall_at_50": 0.7688333333333333,
+      "value": 0.55
+    },
+    {
+      "eligible": false,
+      "minimum_guarded_slice_delta": -0.0325203252032521,
+      "parameter": "weight:char",
+      "pass": 2,
+      "recall_at_50": 0.72375,
+      "value": 0.8
+    },
+    {
+      "eligible": true,
+      "minimum_guarded_slice_delta": 0.019607843137254943,
+      "parameter": "weight:history",
+      "pass": 2,
+      "recall_at_50": 0.7902222222222222,
+      "value": 0.0
+    },
+    {
+      "eligible": true,
+      "minimum_guarded_slice_delta": 0.021568627450980538,
+      "parameter": "weight:history",
+      "pass": 2,
+      "recall_at_50": 0.7883888888888888,
+      "value": 0.25
+    },
+    {
+      "eligible": true,
+      "minimum_guarded_slice_delta": 0.019607843137254943,
+      "parameter": "weight:location",
+      "pass": 2,
+      "recall_at_50": 0.7902222222222222,
+      "value": 0.7
+    },
+    {
+      "eligible": true,
+      "minimum_guarded_slice_delta": -0.005797101449275366,
+      "parameter": "weight:location",
+      "pass": 2,
+      "recall_at_50": 0.7852222222222222,
+      "value": 0.9
+    },
+    {
+      "eligible": true,
+      "minimum_guarded_slice_delta": -0.01594202898550723,
+      "parameter": "weight:location",
+      "pass": 2,
+      "recall_at_50": 0.7849444444444444,
+      "value": 1.2
+    },
+    {
+      "eligible": true,
+      "minimum_guarded_slice_delta": -0.01594202898550723,
+      "parameter": "weight:location",
+      "pass": 2,
+      "recall_at_50": 0.7849444444444444,
+      "value": 1.6
+    },
+    {
+      "eligible": false,
+      "minimum_guarded_slice_delta": -0.03768115942028982,
+      "parameter": "weight:location",
+      "pass": 2,
+      "recall_at_50": 0.7807777777777777,
+      "value": 2.2
+    },
+    {
+      "eligible": false,
+      "minimum_guarded_slice_delta": -0.023188405797101463,
+      "parameter": "weight:microcat",
+      "pass": 2,
+      "recall_at_50": 0.7688333333333334,
+      "value": 0.0
+    },
+    {
+      "eligible": true,
+      "minimum_guarded_slice_delta": 0.009803921568627416,
+      "parameter": "weight:microcat",
+      "pass": 2,
+      "recall_at_50": 0.7863333333333332,
+      "value": 0.15
+    },
+    {
+      "eligible": true,
+      "minimum_guarded_slice_delta": 0.019607843137254943,
+      "parameter": "weight:microcat",
+      "pass": 2,
+      "recall_at_50": 0.7902222222222222,
+      "value": 0.4
+    },
+    {
+      "eligible": true,
+      "minimum_guarded_slice_delta": 0.019607843137254943,
+      "parameter": "weight:title",
+      "pass": 2,
+      "recall_at_50": 0.7902222222222222,
+      "value": 0.0
+    },
+    {
+      "eligible": true,
+      "minimum_guarded_slice_delta": -0.019607843137254943,
+      "parameter": "weight:title",
+      "pass": 2,
+      "recall_at_50": 0.765,
+      "value": 0.2
+    },
+    {
+      "eligible": false,
+      "minimum_guarded_slice_delta": -0.061764705882352944,
+      "parameter": "weight:title",
+      "pass": 2,
+      "recall_at_50": 0.7022222222222222,
+      "value": 0.5
+    },
+    {
+      "eligible": true,
+      "minimum_guarded_slice_delta": 0.019607843137254943,
+      "parameter": "exact_rescore",
+      "pass": 3,
+      "recall_at_50": 0.7902222222222222,
+      "value": false
+    },
+    {
+      "eligible": true,
+      "minimum_guarded_slice_delta": 0.02941176470588236,
+      "parameter": "exact_rescore",
+      "pass": 3,
+      "recall_at_50": 0.7917222222222222,
+      "value": true
+    },
+    {
+      "eligible": true,
+      "minimum_guarded_slice_delta": 0.0,
+      "parameter": "pool",
+      "pass": 3,
+      "recall_at_50": 0.7684166666666666,
+      "value": 120
+    },
+    {
+      "eligible": true,
+      "minimum_guarded_slice_delta": 0.02941176470588236,
+      "parameter": "pool",
+      "pass": 3,
+      "recall_at_50": 0.7861666666666667,
+      "value": 240
+    },
+    {
+      "eligible": true,
+      "minimum_guarded_slice_delta": 0.02941176470588236,
+      "parameter": "pool",
+      "pass": 3,
+      "recall_at_50": 0.7917222222222222,
+      "value": 300
+    },
+    {
+      "eligible": true,
+      "minimum_guarded_slice_delta": 0.02941176470588236,
+      "parameter": "geo_neighbors",
+      "pass": 3,
+      "recall_at_50": 0.7917222222222222,
+      "value": 3
+    },
+    {
+      "eligible": true,
+      "minimum_guarded_slice_delta": 0.019607843137254943,
+      "parameter": "geo_neighbors",
+      "pass": 3,
+      "recall_at_50": 0.7906111111111112,
+      "value": 5
+    },
+    {
+      "eligible": true,
+      "minimum_guarded_slice_delta": 0.02941176470588236,
+      "parameter": "weight:char",
+      "pass": 3,
+      "recall_at_50": 0.7917222222222222,
+      "value": 0.35
+    },
+    {
+      "eligible": true,
+      "minimum_guarded_slice_delta": 0.009803921568627416,
+      "parameter": "weight:char",
+      "pass": 3,
+      "recall_at_50": 0.7708333333333334,
+      "value": 0.55
+    },
+    {
+      "eligible": false,
+      "minimum_guarded_slice_delta": -0.022886597938144293,
+      "parameter": "weight:char",
+      "pass": 3,
+      "recall_at_50": 0.7301944444444445,
+      "value": 0.8
+    },
+    {
+      "eligible": true,
+      "minimum_guarded_slice_delta": 0.02941176470588236,
+      "parameter": "weight:history",
+      "pass": 3,
+      "recall_at_50": 0.7917222222222222,
+      "value": 0.0
+    },
+    {
+      "eligible": true,
+      "minimum_guarded_slice_delta": 0.011764705882353121,
+      "parameter": "weight:history",
+      "pass": 3,
+      "recall_at_50": 0.7882222222222222,
+      "value": 0.25
+    },
+    {
+      "eligible": true,
+      "minimum_guarded_slice_delta": 0.02941176470588236,
+      "parameter": "weight:location",
+      "pass": 3,
+      "recall_at_50": 0.7917222222222222,
+      "value": 0.7
+    },
+    {
+      "eligible": true,
+      "minimum_guarded_slice_delta": -0.01449275362318836,
+      "parameter": "weight:location",
+      "pass": 3,
+      "recall_at_50": 0.7867222222222222,
+      "value": 0.9
+    },
+    {
+      "eligible": false,
+      "minimum_guarded_slice_delta": -0.023188405797101463,
+      "parameter": "weight:location",
+      "pass": 3,
+      "recall_at_50": 0.7850555555555555,
+      "value": 1.2
+    },
+    {
+      "eligible": false,
+      "minimum_guarded_slice_delta": -0.02898550724637683,
+      "parameter": "weight:location",
+      "pass": 3,
+      "recall_at_50": 0.7839444444444444,
+      "value": 1.6
+    },
+    {
+      "eligible": false,
+      "minimum_guarded_slice_delta": -0.04637681159420287,
+      "parameter": "weight:location",
+      "pass": 3,
+      "recall_at_50": 0.7806111111111111,
+      "value": 2.2
+    },
+    {
+      "eligible": true,
+      "minimum_guarded_slice_delta": -0.01449275362318847,
+      "parameter": "weight:microcat",
+      "pass": 3,
+      "recall_at_50": 0.7778611111111111,
+      "value": 0.0
+    },
+    {
+      "eligible": true,
+      "minimum_guarded_slice_delta": 0.01449275362318847,
+      "parameter": "weight:microcat",
+      "pass": 3,
+      "recall_at_50": 0.7914444444444445,
+      "value": 0.15
+    },
+    {
+      "eligible": true,
+      "minimum_guarded_slice_delta": 0.02941176470588236,
+      "parameter": "weight:microcat",
+      "pass": 3,
+      "recall_at_50": 0.7917222222222222,
+      "value": 0.4
+    },
+    {
+      "eligible": true,
+      "minimum_guarded_slice_delta": 0.02941176470588236,
+      "parameter": "weight:title",
+      "pass": 3,
+      "recall_at_50": 0.7917222222222222,
+      "value": 0.0
+    },
+    {
+      "eligible": true,
+      "minimum_guarded_slice_delta": -0.009803921568627416,
+      "parameter": "weight:title",
+      "pass": 3,
+      "recall_at_50": 0.7639444444444444,
+      "value": 0.2
+    },
+    {
+      "eligible": false,
+      "minimum_guarded_slice_delta": -0.061764705882352944,
+      "parameter": "weight:title",
+      "pass": 3,
+      "recall_at_50": 0.6967222222222221,
+      "value": 0.5
+    }
+  ]
 }

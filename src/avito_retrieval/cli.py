@@ -10,6 +10,7 @@ import pandas as pd
 
 from .audit import audit_data
 from .evaluation import evaluate_pipeline
+from .improvement import predict_improved, run_improvement
 from .io import data_fingerprint, load_config, load_frames, source_fingerprint, write_json
 from .model import HybridRetriever
 from .validation import validate_answer
@@ -34,6 +35,16 @@ def build_parser() -> argparse.ArgumentParser:
     evaluate.add_argument("--output", default="artifacts/evaluation.json")
     evaluate.add_argument("--max-queries", type=int, default=None, help="Override both fold limits")
 
+    improve = subparsers.add_parser(
+        "improve", help="Run cached three-fold candidate and reranking experiments"
+    )
+    _add_common(improve, config=True)
+    improve.add_argument("--improvement-config", default="improvement_config.json")
+    improve.add_argument("--output", default="artifacts/improvement/evaluation.json")
+    improve.add_argument("--cache-dir", default="cache")
+    improve.add_argument("--max-queries", type=int, default=None)
+    improve.add_argument("--rebuild-cache", action="store_true")
+
     predict = subparsers.add_parser("predict", help="Fit all train data and create answer.csv")
     _add_common(predict, config=True)
     predict.add_argument("--output", default="answer.csv")
@@ -48,17 +59,28 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def _selected_weights(config: dict[str, Any], path: str | None) -> dict[str, float]:
+def _selection(
+    config: dict[str, Any], path: str | None
+) -> tuple[dict[str, float], dict[str, Any] | None, dict[str, Any]]:
     if path is None:
-        return dict(config["weights"])
+        return dict(config["weights"]), None, {}
     with Path(path).open("r", encoding="utf-8") as stream:
         report = json.load(stream)
-    return {name: float(value) for name, value in report["selected_weights"].items()}
+    if "selected_settings" in report:
+        settings = report["selected_settings"]
+        weights = {name: float(value) for name, value in settings["weights"].items()}
+        return weights, settings, dict(report.get("model_overrides", {}))
+    return (
+        {name: float(value) for name, value in report["selected_weights"].items()},
+        None,
+        {},
+    )
 
 
 def _predict(args: argparse.Namespace) -> dict[str, Any]:
     config = load_config(args.config)
-    weights = _selected_weights(config, args.weights_json)
+    weights, settings, model_overrides = _selection(config, args.weights_json)
+    config.update(model_overrides)
     logging.info("Loading parquet inputs from %s", args.data_dir)
     train, queries, items = load_frames(args.data_dir)
     root = Path(args.data_dir)
@@ -68,6 +90,7 @@ def _predict(args: argparse.Namespace) -> dict[str, Any]:
             "cache_format_version": 1,
             "model_config": config,
             "weights": weights,
+            "improvement_settings": settings,
             "source_sha256": source_fingerprint(Path(__file__).parent),
         },
     )
@@ -77,10 +100,17 @@ def _predict(args: argparse.Namespace) -> dict[str, Any]:
         model = HybridRetriever.load(cache_path)
     else:
         model = HybridRetriever(config).fit(items, train)
+        if settings is not None:
+            model.enable_improvement(train)
         if not args.no_cache:
             logging.info("Saving fitted index to %s", cache_path)
             model.save(cache_path)
-    predictions = model.predict(queries, weights=weights)
+    if settings is None:
+        predictions = model.predict(queries, weights=weights)
+    else:
+        if not model.improvement_enabled:
+            raise RuntimeError("Cached model lacks required improvement indexes")
+        predictions = predict_improved(model, queries, settings, top_k=int(config["top_k"]))
     answer = pd.DataFrame(
         {
             "query_id": queries["query_id"].astype(str),
@@ -91,7 +121,13 @@ def _predict(args: argparse.Namespace) -> dict[str, Any]:
     report = validate_answer(args.output, queries, items)
     if not report["valid"]:
         raise ValueError(f"Generated answer failed validation: {report['errors']}")
-    return {**report, "output": str(args.output), "fingerprint": fingerprint, "weights": weights}
+    return {
+        **report,
+        "output": str(args.output),
+        "fingerprint": fingerprint,
+        "weights": weights,
+        "improvement_settings": settings,
+    }
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -111,6 +147,23 @@ def main(argv: list[str] | None = None) -> int:
         train, _, items = load_frames(args.data_dir)
         report = evaluate_pipeline(train, items, config, max_queries=args.max_queries)
         report["config"] = config
+        write_json(report, args.output)
+    elif args.command == "improve":
+        base_config = load_config(args.config)
+        improvement_config = load_config(args.improvement_config)
+        logging.info("Loading parquet inputs from %s", args.data_dir)
+        train, _, items = load_frames(args.data_dir)
+        report = run_improvement(
+            train,
+            items,
+            base_config,
+            improvement_config,
+            data_dir=args.data_dir,
+            cache_dir=args.cache_dir,
+            max_queries=args.max_queries,
+            rebuild_cache=args.rebuild_cache,
+        )
+        report["improvement_config"] = improvement_config
         write_json(report, args.output)
     elif args.command == "predict":
         report = _predict(args)
