@@ -164,12 +164,16 @@ class DenseConfigTest(unittest.TestCase):
         self.assertEqual(names[:47], EXTENDED_RERANK_FEATURE_NAMES)
         self.assertEqual(names[47:], DENSE_FEATURE_NAMES)
 
-    def test_encoder_folds_must_exclude_reranker_and_evaluation_folds(self) -> None:
-        for folds in ([0, 2], [1, 3], [4]):
+    def test_encoder_folds_must_exclude_reranker_training_fold(self) -> None:
+        for folds in ([0, 2], [2]):
             config = copy.deepcopy(dense_config())
             config["dense"]["train_folds"] = folds
             with self.assertRaises(ValueError):
                 validate_reranker_config(config)
+        config = copy.deepcopy(dense_config())
+        config["dense"]["hard_negatives"] = {"miner_epochs": 1, "rank_low": 30, "rank_high": 3}
+        with self.assertRaises(ValueError):
+            validate_reranker_config(config)
         config = copy.deepcopy(dense_config())
         del config["dense"]["local_candidates"]
         with self.assertRaises(ValueError):

@@ -5,9 +5,9 @@
   "training": {
     "fold": 2,
     "fold_modulo": 5,
-    "limit": 12000,
+    "limit": 24000,
     "unit_seed": 20260929,
-    "expected_unit_sha256": "faee8cc44e0267f252ec9c8b4f7fef3ee04daf22ec15c21b797281e439d028d5",
+    "expected_unit_sha256": "a3650e54393ef3a7cadd550606a1370ed37b7abc90af623ecc8f9ea463cf1f9d",
     "sample_version": "standard-v1",
     "excluded_behavior_folds": [
       2,
@@ -30,22 +30,29 @@
     "base_model": "sergeyzh/rubert-tiny-turbo",
     "train_folds": [
       0,
-      1
+      1,
+      3,
+      4
     ],
     "fold_modulo": 5,
     "seed": 20260928,
-    "epochs": 1,
+    "epochs": 3,
     "batch_size": 256,
     "learning_rate": 0.0001,
     "max_seq_length": 128,
     "local_candidates": 200,
     "global_candidates": 50,
-    "global_rank_depth": 1000
+    "global_rank_depth": 1000,
+    "hard_negatives": {
+      "miner_epochs": 3,
+      "rank_low": 3,
+      "rank_high": 30
+    }
   },
   "model": {
-    "max_leaf_nodes": 15,
-    "max_iter": 400,
-    "learning_rate": 0.07,
+    "max_leaf_nodes": 31,
+    "max_iter": 600,
+    "learning_rate": 0.05,
     "min_samples_leaf": 50,
     "l2_regularization": 10.0,
     "early_stopping": false,

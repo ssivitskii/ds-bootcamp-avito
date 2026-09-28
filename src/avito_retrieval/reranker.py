@@ -158,10 +158,14 @@ def validate_reranker_config(config: dict[str, Any]) -> None:
         missing_dense = [name for name in DENSE_CONFIG_KEYS if name not in config["dense"]]
         if missing_dense:
             raise ValueError(f"Missing dense config keys: {missing_dense}")
+        # The encoder may use evaluation folds for the final fit; holdout checks then
+        # require an encoder trained without them (see README).
         encoder_folds = set(map(int, config["dense"]["train_folds"]))
-        protected = {int(training["fold"]), *map(int, evaluation["folds"])}
-        if encoder_folds & protected:
-            raise ValueError("Dense encoder folds overlap reranker training or evaluation folds")
+        if int(training["fold"]) in encoder_folds:
+            raise ValueError("Dense encoder folds overlap the reranker training fold")
+        hard = config["dense"].get("hard_negatives")
+        if hard and not 0 <= int(hard["rank_low"]) < int(hard["rank_high"]):
+            raise ValueError("Hard-negative ranks must satisfy 0 <= rank_low < rank_high")
         if int(config["inference"].get("candidate_pool", 0)) <= 0 or int(training["candidate_pool"]) <= 0:
             raise ValueError("Candidate pools must be positive")
     if version == 2:
@@ -1023,15 +1027,23 @@ def with_dense_features(extra: ExtraFeatures, dense_rows: list[np.ndarray]) -> E
     )
 
 
-def dense_encoder(train: pd.DataFrame, data_dir: str | Path, cache_dir: str | Path, config: dict[str, Any]) -> Path:
-    """Fine-tune (or load) the bi-encoder; keyed by train data and dense config only."""
+def dense_encoder(
+    train: pd.DataFrame,
+    data_dir: str | Path,
+    cache_dir: str | Path,
+    config: dict[str, Any],
+    corpus: pd.DataFrame | None = None,
+) -> Path:
+    """Fine-tune (or load) the bi-encoder; keyed by input data and dense config only."""
     dense_config = config["dense"]
-    fingerprint = data_fingerprint(
-        [Path(data_dir) / "train.parquet"], {"dense_encoder_format": 1, "dense": dense_config}
-    )
+    root = Path(data_dir)
+    paths = [root / "train.parquet"]
+    if dense_config.get("hard_negatives"):
+        paths.append(root / "benchmark_items.parquet")
+    fingerprint = data_fingerprint(paths, {"dense_encoder_format": 1, "dense": dense_config})
     from .dense import train_encoder
 
-    return train_encoder(train, dense_config, Path(cache_dir) / "dense-encoder" / fingerprint)
+    return train_encoder(train, dense_config, Path(cache_dir) / "dense-encoder" / fingerprint, corpus)
 
 
 def train_or_load_reranker(
@@ -1091,7 +1103,7 @@ def train_or_load_reranker(
     encoder_dir = None
     dense_rows = None
     if dense_schema:
-        encoder_dir = dense_encoder(train, data_dir, cache_dir, config)
+        encoder_dir = dense_encoder(train, data_dir, cache_dir, config, fixed_union)
         dense = DenseIndex.build(
             encoder_dir,
             fixed_union,

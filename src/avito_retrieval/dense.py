@@ -52,8 +52,8 @@ def _device() -> str:
     return "mps" if torch.backends.mps.is_available() else "cpu"
 
 
-def train_encoder(train: pd.DataFrame, config: dict[str, Any], output: Path) -> Path:
-    """Fine-tune the bi-encoder with in-batch negatives; returns the model directory."""
+def _fit_encoder(frame: pd.DataFrame, config: dict[str, Any], epochs: float, output: Path) -> Path:
+    """One MultipleNegativesRankingLoss run from the base model; triplets add hard negatives."""
     import torch
     from datasets import Dataset
     from sentence_transformers import (
@@ -67,18 +67,14 @@ def train_encoder(train: pd.DataFrame, config: dict[str, Any], output: Path) -> 
     model_dir = output / "model"
     if (model_dir / "config.json").exists():
         return model_dir
-    folds = set(map(int, config["train_folds"]))
-    mask = train["search_query"].map(lambda value: stable_fold(value, int(config["fold_modulo"])))
-    rows = train.loc[mask.isin(folds)]
-    frame = pd.DataFrame({"anchor": query_texts(rows), "positive": item_texts(rows)})
-    frame = frame.drop_duplicates().sample(frac=1.0, random_state=int(config["seed"]))
-    LOGGER.info("Fine-tuning dense encoder on %d pairs from folds %s", len(frame), sorted(folds))
+    frame = frame.sample(frac=1.0, random_state=int(config["seed"])).reset_index(drop=True)
+    LOGGER.info("Fine-tuning dense encoder: rows=%d columns=%s epochs=%s", len(frame), list(frame), epochs)
     torch.manual_seed(int(config["seed"]))
     model = SentenceTransformer(str(config["base_model"]), device=_device())
     model.max_seq_length = int(config["max_seq_length"])
     args = SentenceTransformerTrainingArguments(
         output_dir=str(output / "checkpoints"),
-        num_train_epochs=float(config["epochs"]),
+        num_train_epochs=float(epochs),
         per_device_train_batch_size=int(config["batch_size"]),
         learning_rate=float(config["learning_rate"]),
         warmup_steps=0.05,
@@ -91,19 +87,127 @@ def train_encoder(train: pd.DataFrame, config: dict[str, Any], output: Path) -> 
         seed=int(config["seed"]),
         dataloader_num_workers=0,
     )
+    from transformers import TrainerCallback
+
+    class ReleaseMpsCache(TrainerCallback):
+        """Variable-length batches otherwise grow the MPS allocator cache to tens of GB."""
+
+        def on_step_end(self, args, state, control, **kwargs):
+            if state.global_step % 50 == 0 and torch.backends.mps.is_available():
+                torch.mps.empty_cache()
+
     trainer = SentenceTransformerTrainer(
         model=model,
         args=args,
-        train_dataset=Dataset.from_pandas(frame.reset_index(drop=True)),
+        train_dataset=Dataset.from_pandas(frame),
         loss=MultipleNegativesRankingLoss(model, scale=20.0),
+        callbacks=[ReleaseMpsCache()],
     )
     started = time.perf_counter()
     trainer.train()
     model.save(str(model_dir))
     (output / "training.json").write_text(
-        json.dumps({"pairs": len(frame), "seconds": time.perf_counter() - started, "config": config}, indent=2)
+        json.dumps({"rows": len(frame), "epochs": epochs, "seconds": time.perf_counter() - started}, indent=2)
     )
     return model_dir
+
+
+def mine_hard_negatives(
+    pairs: pd.DataFrame,
+    clicked: pd.Series,
+    miner: "DenseIndex",
+    config: dict[str, Any],
+) -> pd.DataFrame:
+    """Add one same-location negative per pair from miner ranks [rank_low, rank_high).
+
+    Items clicked for the anchor text anywhere in the given history are never negatives;
+    pairs whose location lacks enough items are dropped.
+    """
+    settings = config["hard_negatives"]
+    low, high = int(settings["rank_low"]), int(settings["rank_high"])
+    rng = np.random.default_rng(int(config["seed"]))
+    anchors = pairs["anchor"].unique()
+    anchor_index = {anchor: index for index, anchor in enumerate(anchors)}
+    vectors = miner.encode_texts(list(anchors))
+    row_anchor = pairs["anchor"].map(anchor_index).to_numpy()
+    negative = np.full(len(pairs), -1, dtype=np.int64)
+    for location, group in pairs.groupby("search_location_id").groups.items():
+        candidates = miner.location_items.get(int(location))
+        if candidates is None or len(candidates) < high:
+            continue
+        block = miner.embeddings[candidates]
+        group = np.asarray(group)
+        for start in range(0, len(group), 256):
+            chunk = group[start : start + 256]
+            scores = vectors[row_anchor[chunk]] @ block.T
+            depth = min(high + 20, scores.shape[1] - 1)
+            top = np.argpartition(-scores, depth, axis=1)[:, :depth]
+            for local, (row, selected) in enumerate(zip(chunk, top)):
+                selected = selected[np.argsort(-scores[local, selected])]
+                banned = clicked[pairs["anchor"].iat[row]]
+                pool = [
+                    candidates[index]
+                    for index in selected[low:]
+                    if miner.item_ids[candidates[index]] not in banned
+                ][: high - low]
+                if pool:
+                    negative[row] = pool[rng.integers(len(pool))]
+    keep = negative >= 0
+    LOGGER.info("Mined hard negatives for %d of %d pairs", int(keep.sum()), len(pairs))
+    result = pairs.loc[keep, ["anchor", "positive"]].reset_index(drop=True)
+    result["negative_position"] = negative[keep]
+    return result
+
+
+def train_encoder(
+    train: pd.DataFrame,
+    config: dict[str, Any],
+    output: Path,
+    corpus: pd.DataFrame | None = None,
+) -> Path:
+    """Fine-tune the bi-encoder; returns the model directory.
+
+    With ``hard_negatives`` configured, a miner encoder is trained first on the same
+    pairs, encodes ``corpus`` and supplies same-location negatives for the final run.
+    """
+    final_dir = output / "model"
+    if (final_dir / "config.json").exists():
+        return final_dir
+    folds = set(map(int, config["train_folds"]))
+    mask = train["search_query"].map(lambda value: stable_fold(value, int(config["fold_modulo"])))
+    rows = train.loc[mask.isin(folds)].copy()
+    rows["anchor"] = query_texts(rows)
+    rows["positive"] = item_texts(rows)
+    LOGGER.info("Dense encoder folds %s", sorted(folds))
+    settings = config.get("hard_negatives")
+    if not settings:
+        pairs = rows[["anchor", "positive"]].drop_duplicates()
+        _fit_encoder(pairs, config, float(config["epochs"]), output)
+        return final_dir
+    if corpus is None:
+        raise ValueError("Hard-negative mining requires the item corpus")
+    pairs = rows.drop_duplicates(["anchor", "positive"]).reset_index(drop=True)
+    miner_dir = _fit_encoder(
+        pairs[["anchor", "positive"]], config, float(settings["miner_epochs"]), output / "miner"
+    )
+    catalog = corpus.drop_duplicates("item_id", keep="first").sort_values("item_id", kind="stable")
+    item_ids = catalog["item_id"].astype(str).to_numpy()
+    miner = DenseIndex.build(
+        miner_dir,
+        catalog,
+        item_ids,
+        catalog["item_location_id"].to_numpy(np.int64),
+        config,
+        output / "miner" / "corpus.npz",
+    )
+    anchors = train[["search_query", "search_infm_params_text", "item_id"]].copy()
+    anchors["anchor"] = query_texts(anchors)
+    clicked = anchors.groupby("anchor")["item_id"].agg(lambda values: set(map(str, values)))
+    triplets = mine_hard_negatives(pairs, clicked, miner, config)
+    negatives = catalog.iloc[triplets.pop("negative_position").to_numpy()]
+    triplets["negative"] = item_texts(negatives)
+    _fit_encoder(triplets, config, float(config["epochs"]), output)
+    return final_dir
 
 
 @dataclass
@@ -194,15 +298,16 @@ class DenseIndex:
         state["_encoder"] = None
         return state
 
-    def encode_queries(self, queries: pd.DataFrame) -> np.ndarray:
+    def encode_texts(self, texts: list[str]) -> np.ndarray:
         if self._encoder is None:
             self._encoder = self._load_encoder(self.encoder_dir, self.config)
         return np.asarray(
-            self._encoder.encode(
-                query_texts(queries), batch_size=256, normalize_embeddings=True, show_progress_bar=False
-            ),
+            self._encoder.encode(texts, batch_size=256, normalize_embeddings=True, show_progress_bar=False),
             dtype=np.float32,
         )
+
+    def encode_queries(self, queries: pd.DataFrame) -> np.ndarray:
+        return self.encode_texts(query_texts(queries))
 
     def _location_groups(self, search_locations: np.ndarray):
         order = np.argsort(search_locations, kind="stable")
