@@ -139,8 +139,9 @@ def _predict(args: argparse.Namespace) -> dict[str, Any]:
     train, queries, items = load_frames(args.data_dir)
     reranker = None
     reranker_fingerprint = None
+    reranker_cache_root = None
     if reranker_config is not None:
-        reranker, _, reranker_fingerprint = train_or_load_reranker(
+        reranker, reranker_cache_root, reranker_fingerprint = train_or_load_reranker(
             train,
             items,
             config,
@@ -191,6 +192,7 @@ def _predict(args: argparse.Namespace) -> dict[str, Any]:
                 settings,
                 reranker,
                 top_k=int(config["top_k"]),
+                cache_root=reranker_cache_root,
             )
     answer = pd.DataFrame(
         {

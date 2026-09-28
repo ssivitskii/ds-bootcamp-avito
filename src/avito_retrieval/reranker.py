@@ -15,6 +15,7 @@ from sklearn.ensemble import HistGradientBoostingClassifier
 from threadpoolctl import threadpool_limits
 
 from .constants import ITEM_COLUMNS, QUERY_COLUMNS
+from .dense import DENSE_FEATURE_NAMES, DenseIndex
 from .evaluation import evaluation_corpus, limit_units, make_query_units, training_without_folds
 from .improvement import (
     FEATURE_INDEX,
@@ -82,8 +83,23 @@ EXTRA_FEATURE_NAMES = (
 # Kept as a public alias for cached round-3 artifacts and downstream notebooks.
 RERANK_FEATURE_NAMES = BASE_RERANK_FEATURE_NAMES
 EXTENDED_RERANK_FEATURE_NAMES = (*BASE_RERANK_FEATURE_NAMES, *EXTRA_FEATURE_NAMES)
+DENSE_RERANK_FEATURE_NAMES = (*EXTENDED_RERANK_FEATURE_NAMES, *DENSE_FEATURE_NAMES)
 BASE_FEATURE_SCHEMA = "hgb-locality-v1"
 EXTENDED_FEATURE_SCHEMA = "hgb-metadata-coverage-v2"
+DENSE_FEATURE_SCHEMA = "hgb-dense-v3"
+DENSE_CONFIG_KEYS = (
+    "base_model",
+    "train_folds",
+    "fold_modulo",
+    "seed",
+    "epochs",
+    "batch_size",
+    "learning_rate",
+    "max_seq_length",
+    "local_candidates",
+    "global_candidates",
+    "global_rank_depth",
+)
 
 
 def validate_reranker_config(config: dict[str, Any]) -> None:
@@ -94,7 +110,7 @@ def validate_reranker_config(config: dict[str, Any]) -> None:
     if not bool(config["enabled"]):
         raise ValueError("Reranker config is disabled")
     version = int(config["format_version"])
-    if version not in {1, 2}:
+    if version not in {1, 2, 3}:
         raise ValueError("Unsupported reranker config format")
     training = config["training"]
     for name in (
@@ -126,10 +142,28 @@ def validate_reranker_config(config: dict[str, Any]) -> None:
         *(str(value) for value in evaluation["expected_unit_sha256"].values()),
     ]
     schema = str(config["features"].get("schema"))
-    if schema not in {BASE_FEATURE_SCHEMA, EXTENDED_FEATURE_SCHEMA}:
+    if schema not in {BASE_FEATURE_SCHEMA, EXTENDED_FEATURE_SCHEMA, DENSE_FEATURE_SCHEMA}:
         raise ValueError("Unsupported reranker feature schema")
     if version == 1 and schema != BASE_FEATURE_SCHEMA:
         raise ValueError("Reranker format 1 requires the 30-feature schema")
+    if version == 3:
+        if schema != DENSE_FEATURE_SCHEMA:
+            raise ValueError("Reranker format 3 requires the dense feature schema")
+        for name in ("candidate_pool", "bundle_batch_size"):
+            if name not in training:
+                raise ValueError(f"Missing reranker training key: {name}")
+        for section in ("dense", "inference"):
+            if section not in config:
+                raise ValueError(f"Missing reranker config section: {section}")
+        missing_dense = [name for name in DENSE_CONFIG_KEYS if name not in config["dense"]]
+        if missing_dense:
+            raise ValueError(f"Missing dense config keys: {missing_dense}")
+        encoder_folds = set(map(int, config["dense"]["train_folds"]))
+        protected = {int(training["fold"]), *map(int, evaluation["folds"])}
+        if encoder_folds & protected:
+            raise ValueError("Dense encoder folds overlap reranker training or evaluation folds")
+        if int(config["inference"].get("candidate_pool", 0)) <= 0 or int(training["candidate_pool"]) <= 0:
+            raise ValueError("Candidate pools must be positive")
     if version == 2:
         if schema != EXTENDED_FEATURE_SCHEMA:
             raise ValueError("Reranker format 2 requires the 47-feature schema")
@@ -181,7 +215,11 @@ def validate_reranker_config(config: dict[str, Any]) -> None:
         raise ValueError("Reranker unit hashes must be lowercase SHA-256 values")
     if int(config["model"].get("thread_limit", 0)) != 4:
         raise ValueError("Frozen reranker requires thread_limit=4")
-    if len(BASE_RERANK_FEATURE_NAMES) != 30 or len(EXTENDED_RERANK_FEATURE_NAMES) != 47:
+    if (
+        len(BASE_RERANK_FEATURE_NAMES) != 30
+        or len(EXTENDED_RERANK_FEATURE_NAMES) != 47
+        or len(DENSE_RERANK_FEATURE_NAMES) != 52
+    ):
         raise AssertionError("Frozen reranker must have exactly 30 features")
 
 
@@ -348,6 +386,8 @@ def feature_names_for_config(config: dict[str, Any]) -> tuple[str, ...]:
         return BASE_RERANK_FEATURE_NAMES
     if schema == EXTENDED_FEATURE_SCHEMA:
         return EXTENDED_RERANK_FEATURE_NAMES
+    if schema == DENSE_FEATURE_SCHEMA:
+        return DENSE_RERANK_FEATURE_NAMES
     raise ValueError(f"Unsupported reranker feature schema: {schema}")
 
 
@@ -523,7 +563,7 @@ def prepare_features(
     if len(locality.rows) != len(bundle.rows):
         raise ValueError("Locality and packed feature rows must align")
     feature_names = feature_names_for_config(config)
-    uses_extra = str(config["features"]["schema"]) == EXTENDED_FEATURE_SCHEMA
+    uses_extra = str(config["features"]["schema"]) in {EXTENDED_FEATURE_SCHEMA, DENSE_FEATURE_SCHEMA}
     if uses_extra and (extra is None or len(extra.rows) != len(bundle.rows)):
         raise ValueError("Extended reranker requires aligned extra feature rows")
     if not uses_extra and extra is not None:
@@ -912,6 +952,88 @@ def _bundle_for_units(
     return bundle
 
 
+def dense_bundle_for_units(
+    model: HybridRetriever,
+    train_fit: pd.DataFrame,
+    units: pd.DataFrame,
+    settings: dict[str, Any],
+    fold: int,
+    dense: DenseIndex,
+    cache_path: Path | None,
+    *,
+    pool: int,
+    batch_size: int,
+    rebuild: bool = False,
+    refit: bool = True,
+) -> tuple[PackedFeatureBundle, list[np.ndarray]]:
+    """Retrieve lexical + dense candidates; returns the bundle and aligned dense rows."""
+    if cache_path is not None and cache_path.exists() and not rebuild:
+        payload = joblib.load(cache_path)
+        bundle = payload["bundle"]
+        if bundle.relevant != units["relevant_items"].tolist() or len(bundle.rows) != len(units):
+            raise ValueError(f"Cached dense bundle does not match units: {cache_path}")
+        if not np.array_equal(bundle.item_ids, model.item_ids):
+            raise ValueError(f"Cached dense bundle item order differs from model: {cache_path}")
+        return bundle, payload["dense_rows"]
+    if refit:
+        model.refit_behavior(train_fit)
+    geo = int(settings["geo_neighbors"])
+    parts: list[PackedFeatureBundle] = []
+    dense_rows: list[np.ndarray] = []
+    for start in range(0, len(units), batch_size):
+        selected = units.iloc[start : start + batch_size].reset_index(drop=True)
+        search = dense.search(selected[QUERY_COLUMNS])
+        rows = model.retrieve_improvement_features(
+            selected[QUERY_COLUMNS],
+            max_pool=pool,
+            geo_neighbor_options=(geo,),
+            extra_candidates=dense.candidates(search),
+        )
+        part = pack_feature_rows(model, rows, selected, train_fit, fold, (geo,))
+        del rows
+        dense_rows.extend(dense.features(search, [row.positions for row in part.rows]))
+        parts.append(part)
+        LOGGER.info(
+            "Packed dense reranker candidates: fold=%d rows=%d/%d pool=%d",
+            fold,
+            min(start + batch_size, len(units)),
+            len(units),
+            pool,
+        )
+    bundle = _combine_bundles(parts, fold)
+    if cache_path is not None:
+        _atomic_joblib_dump({"bundle": bundle, "dense_rows": dense_rows}, cache_path)
+    return bundle, dense_rows
+
+
+def with_dense_features(extra: ExtraFeatures, dense_rows: list[np.ndarray]) -> ExtraFeatures:
+    if len(extra.rows) != len(dense_rows):
+        raise ValueError("Dense rows must align with extra feature rows")
+    rows = []
+    for metadata, dense in zip(extra.rows, dense_rows, strict=True):
+        if len(metadata) != len(dense):
+            raise ValueError("Dense feature row does not align with packed positions")
+        rows.append(np.column_stack([metadata, dense]).astype(np.float32, copy=False))
+    return ExtraFeatures(
+        rows=rows,
+        fixed_union_items=extra.fixed_union_items,
+        location_centers=extra.location_centers,
+        median_word_vocab_nnz=extra.median_word_vocab_nnz,
+        unigram_vocabulary=extra.unigram_vocabulary,
+    )
+
+
+def dense_encoder(train: pd.DataFrame, data_dir: str | Path, cache_dir: str | Path, config: dict[str, Any]) -> Path:
+    """Fine-tune (or load) the bi-encoder; keyed by train data and dense config only."""
+    dense_config = config["dense"]
+    fingerprint = data_fingerprint(
+        [Path(data_dir) / "train.parquet"], {"dense_encoder_format": 1, "dense": dense_config}
+    )
+    from .dense import train_encoder
+
+    return train_encoder(train, dense_config, Path(cache_dir) / "dense-encoder" / fingerprint)
+
+
 def train_or_load_reranker(
     train: pd.DataFrame,
     benchmark_items: pd.DataFrame,
@@ -962,19 +1084,47 @@ def train_or_load_reranker(
         rebuild=rebuild,
     )
     extended = str(config["features"]["schema"]) == EXTENDED_FEATURE_SCHEMA
+    dense_schema = str(config["features"]["schema"]) == DENSE_FEATURE_SCHEMA
     training_pool = int(config["training"].get("candidate_pool", settings["pool"]))
     training_settings = _settings_with_pool(settings, training_pool)
-    bundle = _bundle_for_units(
-        model,
-        train_fit,
-        units,
-        training_settings,
-        int(config["training"]["fold"]),
-        cache_root / f"train{len(units)}.joblib",
-        rebuild=rebuild,
-        pool=training_pool,
-        batch_size=int(config["training"].get("bundle_batch_size", len(units))),
-    )
+    fixed_union = evaluation_corpus(benchmark_items, train)
+    encoder_dir = None
+    dense_rows = None
+    if dense_schema:
+        encoder_dir = dense_encoder(train, data_dir, cache_dir, config)
+        dense = DenseIndex.build(
+            encoder_dir,
+            fixed_union,
+            model.item_ids,
+            model.item_locations,
+            config["dense"],
+            cache_root / "dense-offline.npz",
+        )
+        bundle, dense_rows = dense_bundle_for_units(
+            model,
+            train_fit,
+            units,
+            training_settings,
+            int(config["training"]["fold"]),
+            dense,
+            cache_root / f"train{len(units)}-dense.joblib",
+            pool=training_pool,
+            batch_size=int(config["training"]["bundle_batch_size"]),
+            rebuild=rebuild,
+        )
+        del dense
+    else:
+        bundle = _bundle_for_units(
+            model,
+            train_fit,
+            units,
+            training_settings,
+            int(config["training"]["fold"]),
+            cache_root / f"train{len(units)}.joblib",
+            rebuild=rebuild,
+            pool=training_pool,
+            batch_size=int(config["training"].get("bundle_batch_size", len(units))),
+        )
     locality = build_locality_features(
         model,
         train_fit,
@@ -983,10 +1133,14 @@ def train_or_load_reranker(
         config,
         require_disjoint=True,
     )
-    fixed_union = evaluation_corpus(benchmark_items, train)
     extra = (
-        build_extra_features(model, fixed_union, units, bundle) if extended else None
+        build_extra_features(model, fixed_union, units, bundle)
+        if extended or dense_schema
+        else None
     )
+    if dense_rows is not None:
+        assert extra is not None
+        extra = with_dense_features(extra, dense_rows)
     prepared = prepare_features(
         bundle,
         locality,
@@ -1052,7 +1206,12 @@ def train_or_load_reranker(
             },
         }
     artifact = {
-        "format": "avito-hgb-reranker-v2" if extended else "avito-hgb-reranker-v1",
+        "format": (
+            "avito-hgb-reranker-v3"
+            if dense_schema
+            else "avito-hgb-reranker-v2" if extended else "avito-hgb-reranker-v1"
+        ),
+        "dense_encoder_dir": str(encoder_dir) if encoder_dir is not None else None,
         "model": ranker,
         "baseline_model": baseline_model,
         "baseline": baseline_details,
@@ -1095,8 +1254,10 @@ def predict_reranked(
     reranker: dict[str, Any],
     *,
     top_k: int,
+    cache_root: Path | None = None,
 ) -> list[list[str]]:
     config = reranker["config"]
+    dense_schema = str(config["features"]["schema"]) == DENSE_FEATURE_SCHEMA
     geo = int(settings["geo_neighbors"])
     inference_pool = int(config.get("inference", {}).get("candidate_pool", settings["pool"]))
     inference_settings = _settings_with_pool(settings, inference_pool)
@@ -1104,7 +1265,30 @@ def predict_reranked(
     units["relevant_items"] = [[] for _ in range(len(units))]
     batch_size = int(config.get("inference", {}).get("bundle_batch_size", len(units)))
     parts: list[PackedFeatureBundle] = []
-    for start in range(0, len(units), batch_size):
+    dense_rows = None
+    if dense_schema:
+        dense = DenseIndex.build(
+            reranker["dense_encoder_dir"],
+            benchmark_items,
+            model.item_ids,
+            model.item_locations,
+            config["dense"],
+            (cache_root or Path("cache")) / "dense-benchmark.npz",
+        )
+        # The prediction model is already fitted on the full train history.
+        bundle, dense_rows = dense_bundle_for_units(
+            model,
+            pd.DataFrame({"item_id": []}),
+            units,
+            inference_settings,
+            -1,
+            dense,
+            None,
+            pool=inference_pool,
+            batch_size=batch_size,
+            refit=False,
+        )
+    for start in range(0, len(units) if not dense_schema else 0, batch_size):
         selected = units.iloc[start : start + batch_size].reset_index(drop=True)
         rows = model.retrieve_improvement_features(
             selected[QUERY_COLUMNS],
@@ -1127,7 +1311,8 @@ def predict_reranked(
             len(units),
             inference_pool,
         )
-    bundle = _combine_bundles(parts, -1)
+    if not dense_schema:
+        bundle = _combine_bundles(parts, -1)
     locality = build_locality_features(
         model,
         train,
@@ -1137,10 +1322,13 @@ def predict_reranked(
         require_disjoint=False,
     )
     extra = None
-    if str(config["features"]["schema"]) == EXTENDED_FEATURE_SCHEMA:
+    if str(config["features"]["schema"]) in {EXTENDED_FEATURE_SCHEMA, DENSE_FEATURE_SCHEMA}:
         extra = build_extra_features(
             model, evaluation_corpus(benchmark_items, train), queries, bundle
         )
+    if dense_rows is not None:
+        assert extra is not None
+        extra = with_dense_features(extra, dense_rows)
     prepared = prepare_features(
         bundle,
         locality,

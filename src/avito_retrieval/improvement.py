@@ -115,7 +115,9 @@ def pack_feature_rows(
                 if name in channels:
                     ranks[name][local] = np.uint16(int(channels[name]))
             always[local] = (
-                "__history_source" in channels or "__fallback_source" in channels
+                "__history_source" in channels
+                or "__fallback_source" in channels
+                or "__dense_source" in channels
             )
         packed_rows.append(PackedRow(positions, values, ranks, always))
 

@@ -1,3 +1,5 @@
+accelerate==1.15.0
+datasets==5.0.1
 joblib==1.6.0
 nltk==3.10.3
 numpy==2.5.3
@@ -5,4 +7,7 @@ pandas==3.0.6
 pyarrow==25.0.1
 scikit-learn==1.9.1
 scipy==1.18.1
+sentence-transformers==6.1.0
 threadpoolctl==3.7.0
+torch==2.14.0
+transformers==5.17.0

@@ -498,8 +498,13 @@ class HybridRetriever:
         *,
         max_pool: int,
         geo_neighbor_options: tuple[int, ...],
+        extra_candidates: list[np.ndarray] | None = None,
     ) -> list[FeatureRow]:
-        """Build one maximal candidate union with ranks and exact reranking features."""
+        """Build one maximal candidate union with ranks and exact reranking features.
+
+        ``extra_candidates`` holds per-query corpus positions from an external
+        channel (the dense bi-encoder); they are always eligible, like history.
+        """
         if not self.improvement_enabled:
             raise RuntimeError("Call enable_improvement before improved retrieval")
         self._ensure_improvement_transposes()
@@ -584,6 +589,12 @@ class HybridRetriever:
         self._history_channel(
             queries, query_word, rows, marker_name="__history_source"
         )
+        if extra_candidates is not None:
+            if len(extra_candidates) != len(queries):
+                raise ValueError("Extra candidates must align with queries")
+            for row_number, positions in enumerate(extra_candidates):
+                for pos in positions:
+                    self._add_rank(rows, row_number, int(pos), "__dense_source", 1)
 
         for row_number, query in enumerate(queries.itertuples(index=False)):
             for pos in self.fallback_positions:
