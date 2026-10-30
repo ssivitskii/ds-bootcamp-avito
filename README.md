@@ -1,4 +1,19 @@
-# Marketplace Search & Ranking
+<picture>
+  <source media="(max-width: 600px) and (prefers-color-scheme: dark)" srcset="docs/assets/readme/cover-dark-mobile.svg">
+  <source media="(max-width: 600px)" srcset="docs/assets/readme/cover-light-mobile.svg">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/readme/cover-dark.svg">
+  <img src="docs/assets/readme/cover-light.svg" width="100%" alt="Search &amp; Ranking — Hybrid search for marketplace listings">
+</picture>
+
+<p align="center">
+  <a href="#architecture">Architecture</a> &nbsp;·&nbsp;
+  <a href="#results-and-evidence">Results</a> &nbsp;·&nbsp;
+  <a href="#reproduce">Run locally</a> &nbsp;·&nbsp;
+  <a href="docs/experiment-log.md">Experiment log</a> &nbsp;·&nbsp;
+  <a href="#read-the-implementation">Source map</a>
+</p>
+
+## Overview
 
 **Hybrid retrieval and learned reranking for Russian service listings.**
 
@@ -7,14 +22,28 @@ lexical matching, a fine-tuned RuBERT bi-encoder, behavioral signals and gradien
 boosting. This repository is a personal bootcamp project on organizer-provided
 data; it does not describe Avito's internal search system.
 
-## Pipeline
+<a id="pipeline"></a>
 
-```text
-Query + filters + location
-  -> word/character TF-IDF + dense retrieval + train-only history
-  -> merged candidate pool + metadata and lexical/dense features
-  -> gradient-boosted reranker -> top 50 listings
-```
+## Architecture
+
+<picture>
+  <source media="(max-width: 600px) and (prefers-color-scheme: dark)" srcset="docs/assets/readme/architecture-dark-mobile.svg">
+  <source media="(max-width: 600px)" srcset="docs/assets/readme/architecture-light-mobile.svg">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/readme/architecture-dark.svg">
+  <img src="docs/assets/readme/architecture-light.svg" width="100%" alt="Query text, filters and location → TF-IDF, RuBERT and train-only history → candidate features and HGB reranking → top 50. Training and evaluation use normalized query groups with explicit fold exclusions.">
+</picture>
+
+The query-time path merges lexical, dense and behavioral candidates, builds
+metadata and similarity features, then blends the learned reranker with the
+retrieval score. The training path fits the dense encoder and reranker under
+the fold exclusions recorded in the experiment protocol.
+
+| Component | Implementation |
+| --- | --- |
+| Lexical retrieval and train-only behavioral signals | [`model.py`](src/avito_retrieval/model.py) |
+| Fine-tuned bi-encoder, hard negatives and dense index | [`dense.py`](src/avito_retrieval/dense.py) |
+| Candidate features, HGB training and ranked output | [`reranker.py`](src/avito_retrieval/reranker.py) |
+| Data audit, command-line entry point and evaluation | [`audit.py`](src/avito_retrieval/audit.py) · [`cli.py`](src/avito_retrieval/cli.py) · [`evaluation.py`](src/avito_retrieval/evaluation.py) |
 
 The dense encoder uses in-batch negatives and mined hard negatives. Evaluation
 groups normalized query text to keep held-out query history out of training.
@@ -44,6 +73,8 @@ Python 3.12. Download the organizer archive linked in the
 hashes, and place its three Parquet files in `data/`.
 
 ```bash
+git clone https://github.com/ssivitskii/ds-bootcamp-avito.git
+cd ds-bootcamp-avito
 python3.12 -m venv .venv
 .venv/bin/pip install -r requirements.txt
 .venv/bin/pip install -e .
@@ -69,3 +100,7 @@ the dense holdout tables. This remains a reproducibility limitation.
 - [Full experiment history, ablations, data provenance and limitations](docs/experiment-log.md)
 
 The experiment log retains all earlier results, failed ideas and commands.
+
+---
+
+[← Back to portfolio](https://github.com/ssivitskii#selected-work)

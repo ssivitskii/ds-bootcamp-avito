@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="1290" viewBox="0 0 600 1290" role="img" aria-labelledby="title desc">
+<title id="title">Search &amp; Ranking architecture</title>
+<desc id="desc">QUERY-TIME PIPELINE: Query context → Retrieve → Rerank → Return. TRAINING &amp; EVALUATION: Organizer data → Query groups → Fit components → Evaluate. First dense holdout, adaptive development and platform results are reported separately.</desc>
+<rect x="1" y="1" width="598" height="1288" rx="22" fill="#F5F9FF" stroke="#CADCF4"/>
+<g font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Arial,sans-serif">
+<defs><marker id="arrow" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 1L6 4L0 7" fill="none" stroke="#2164C5" stroke-width="1.4"/></marker></defs>
+<text x="30" y="52" font-size="16" fill="#2164C5" font-weight="700" letter-spacing="1">QUERY-TIME PIPELINE</text>
+<rect x="30" y="98" width="540" height="100" rx="12" fill="#E5EFFF" stroke="#CADCF4"/>
+<text x="51" y="129" font-size="16" fill="#2164C5" font-weight="700" >01</text>
+<text x="96" y="130" font-size="25" fill="#10243F" font-weight="650" >Query context</text>
+<text x="96" y="158" font-size="20" fill="#48627C" font-weight="400" >Text, filters</text>
+<text x="96" y="182" font-size="20" fill="#48627C" font-weight="400" >and location</text>
+<path d="M300 201V215" fill="none" stroke="#2164C5" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="30" y="220" width="540" height="100" rx="12" fill="#E5EFFF" stroke="#CADCF4"/>
+<text x="51" y="251" font-size="16" fill="#2164C5" font-weight="700" >02</text>
+<text x="96" y="252" font-size="25" fill="#10243F" font-weight="650" >Retrieve</text>
+<text x="96" y="280" font-size="20" fill="#48627C" font-weight="400" >TF-IDF + RuBERT</text>
+<text x="96" y="304" font-size="20" fill="#48627C" font-weight="400" >Train-only history</text>
+<path d="M300 323V337" fill="none" stroke="#2164C5" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="30" y="342" width="540" height="100" rx="12" fill="#E5EFFF" stroke="#CADCF4"/>
+<text x="51" y="373" font-size="16" fill="#2164C5" font-weight="700" >03</text>
+<text x="96" y="374" font-size="25" fill="#10243F" font-weight="650" >Rerank</text>
+<text x="96" y="402" font-size="20" fill="#48627C" font-weight="400" >Candidate features</text>
+<text x="96" y="426" font-size="20" fill="#48627C" font-weight="400" >HGB + score blend</text>
+<path d="M300 445V459" fill="none" stroke="#2164C5" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="30" y="464" width="540" height="100" rx="12" fill="#E5EFFF" stroke="#CADCF4"/>
+<text x="51" y="495" font-size="16" fill="#2164C5" font-weight="700" >04</text>
+<text x="96" y="496" font-size="25" fill="#10243F" font-weight="650" >Return</text>
+<text x="96" y="524" font-size="20" fill="#48627C" font-weight="400" >Up to 50 listings</text>
+<text x="96" y="548" font-size="20" fill="#48627C" font-weight="400" >Prediction CSV</text>
+<text x="30" y="647" font-size="16" fill="#2164C5" font-weight="700" letter-spacing="1">TRAINING &amp; EVALUATION</text>
+<rect x="30" y="693" width="540" height="100" rx="12" fill="#E5EFFF" stroke="#CADCF4"/>
+<text x="51" y="724" font-size="16" fill="#2164C5" font-weight="700" >01</text>
+<text x="96" y="725" font-size="25" fill="#10243F" font-weight="650" >Organizer data</text>
+<text x="96" y="753" font-size="20" fill="#48627C" font-weight="400" >Listings + click labels</text>
+<text x="96" y="777" font-size="20" fill="#48627C" font-weight="400" >Saved input hashes</text>
+<path d="M300 796V810" fill="none" stroke="#2164C5" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="30" y="815" width="540" height="100" rx="12" fill="#E5EFFF" stroke="#CADCF4"/>
+<text x="51" y="846" font-size="16" fill="#2164C5" font-weight="700" >02</text>
+<text x="96" y="847" font-size="25" fill="#10243F" font-weight="650" >Query groups</text>
+<text x="96" y="875" font-size="20" fill="#48627C" font-weight="400" >Normalized text</text>
+<text x="96" y="899" font-size="20" fill="#48627C" font-weight="400" >Explicit fold exclusions</text>
+<path d="M300 918V932" fill="none" stroke="#2164C5" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="30" y="937" width="540" height="100" rx="12" fill="#E5EFFF" stroke="#CADCF4"/>
+<text x="51" y="968" font-size="16" fill="#2164C5" font-weight="700" >03</text>
+<text x="96" y="969" font-size="25" fill="#10243F" font-weight="650" >Fit components</text>
+<text x="96" y="997" font-size="20" fill="#48627C" font-weight="400" >Dense encoder</text>
+<text x="96" y="1021" font-size="20" fill="#48627C" font-weight="400" >Learned reranker</text>
+<path d="M300 1040V1054" fill="none" stroke="#2164C5" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="30" y="1059" width="540" height="100" rx="12" fill="#E5EFFF" stroke="#CADCF4"/>
+<text x="51" y="1090" font-size="16" fill="#2164C5" font-weight="700" >04</text>
+<text x="96" y="1091" font-size="25" fill="#10243F" font-weight="650" >Evaluate</text>
+<text x="96" y="1119" font-size="20" fill="#48627C" font-weight="400" >Macro Recall@50</text>
+<text x="96" y="1143" font-size="20" fill="#48627C" font-weight="400" >Protocol-specific reports</text>
+<text x="30" y="1228" font-size="18" fill="#48627C" font-weight="400" >First dense holdout, adaptive development and platform</text>
+<text x="30" y="1252" font-size="18" fill="#48627C" font-weight="400" >results are reported separately.</text>
+</g></svg>
